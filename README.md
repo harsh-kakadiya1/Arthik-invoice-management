@@ -50,6 +50,11 @@ Arthik is a web-based invoice generator application built with Next.js, TypeScri
 - [ ] **Custom Inputs:** Define your own inputs that are missing from the default invoice builder. (Ex: VAT number)
 - [ ] **Individual Tax for Line Items:** Add tax details for a specific line item other than the general tax
 
+## Preview of Templates
+
+Template 1:
+![Template 1](./Invoice_test_images/Invoice-temp1.png)
+
 ## Demo
 
 Visit the [live demo](will add soon !) to see Arthik in action.
