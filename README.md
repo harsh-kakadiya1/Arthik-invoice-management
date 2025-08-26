@@ -1,5 +1,5 @@
 # Arthik
-
+![Arthik Logo](./Invoice_test_images/Logo/Arthik_logo.png)
 Arthik is a web-based invoice generator application built with Next.js, TypeScript, React, and the Shadcn UI library. It provides an easy way to create and manage professional invoices.
 
 ## Table of Contents
@@ -50,6 +50,20 @@ Arthik is a web-based invoice generator application built with Next.js, TypeScri
 - [ ] **Themeable Templates:** Select a theme color for the invoice
 - [ ] **Custom Inputs:** Define your own inputs that are missing from the default invoice builder. (Ex: VAT number)
 - [ ] **Individual Tax for Line Items:** Add tax details for a specific line item other than the general tax
+
+## Preview of Templates
+
+Template 1:
+![Template 1](./Invoice_test_images/Invoice-temp1.png)
+
+Template 2:
+![Template 2](./Invoice_test_images/Invoice-temp2.png)
+
+Template 3:
+![Template 3](./Invoice_test_images/Invoice-temp3.png)
+
+Template 4:
+![Template 4](./Invoice_test_images/Invoice-temp4.png)
 
 ## Demo
 
