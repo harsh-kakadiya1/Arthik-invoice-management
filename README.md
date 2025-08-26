@@ -1,10 +1,10 @@
-# Arthik
-![Arthik Logo](./Invoice_test_images/Logo/Arthik_logo.png)
-Arthik is a web-based invoice generator application built with Next.js, TypeScript, React, and the Shadcn UI library. It provides an easy way to create and manage professional invoices.
+# Arthiik
+<img src="Invoice_test_images/Logo/Arthiik_logo.png" alt="Arthiik Logo" width="150" />
+Arthiik is a web-based invoice generator application built with Next.js, TypeScript, React, and the Shadcn UI library. It provides an easy way to create and manage professional invoices.
 
 ## Table of Contents
 
-- [Arthik](#arthik)
+- [Arthiik](#Arthiik)
   - [Table of Contents](#table-of-contents)
   - [Technologies](#technologies)
     - [Core Technologies](#core-technologies)
@@ -66,11 +66,11 @@ Template 4:
 
 ## Demo
 
-Visit the [live demo](will add soon !) to see Arthik in action.
+Visit the [live demo](will add soon !) to see Arthiik in action.
 
 ## Getting Started
 
-Follow these instructions to get Arthik up and running on your local machine.
+Follow these instructions to get Arthiik up and running on your local machine.
 
 ### Prerequisites
 
@@ -81,8 +81,8 @@ Follow these instructions to get Arthik up and running on your local machine.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/harsh-kakadiya1/Arthik-invoice-management.git
-   cd Arthik
+   git clone https://github.com/harsh-kakadiya1/Arthiik-invoice-management.git
+   cd Arthiik
    ```
 2. Install dependencies
    
