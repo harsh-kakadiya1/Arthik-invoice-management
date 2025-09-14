@@ -1,2 +1,4 @@
 /invoice-viewer
 /Arthik-invoice-app
+node_modules/
+.env
