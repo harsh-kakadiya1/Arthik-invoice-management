@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dark-bg-primary: #050505;
+  --dark-bg-secondary: #1A1A1A;
+  --brand-teal: #1B9AAA;
+  --light-text-primary: #FFFFFF;
+  --light-text-secondary: #DDDBBCB;
+  --dark-border: #333333;
+  --state-success: #28A745;
+  --state-danger: #DC3545;
+  --state-warning: #FFC107;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--dark-bg-primary);
+  color: var(--light-text-primary);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--dark-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-teal);
+}
+
+/* Form styles */
+.form-input {
+  background-color: var(--dark-bg-secondary) !important;
+  border: 1px solid var(--dark-border);
+  color: var(--light-text-primary) !important;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--brand-teal);
+  border-color: var(--brand-teal);
+  background-color: var(--dark-bg-secondary) !important;
+  color: var(--light-text-primary) !important;
+}
+
+.form-input:hover {
+  background-color: var(--dark-bg-secondary) !important;
+  color: var(--light-text-primary) !important;
+}
+
+.form-input:active {
+  background-color: var(--dark-bg-secondary) !important;
+  color: var(--light-text-primary) !important;
+}
+
+/* Ensure all input types maintain dark theme */
+input[type="text"].form-input,
+input[type="email"].form-input,
+input[type="tel"].form-input,
+input[type="number"].form-input,
+input[type="date"].form-input,
+textarea.form-input,
+select.form-input {
+  background-color: var(--dark-bg-secondary) !important;
+  color: var(--light-text-primary) !important;
+}
+
+input[type="text"].form-input:focus,
+input[type="email"].form-input:focus,
+input[type="tel"].form-input:focus,
+input[type="number"].form-input:focus,
+input[type="date"].form-input:focus,
+textarea.form-input:focus,
+select.form-input:focus {
+  background-color: var(--dark-bg-secondary) !important;
+  color: var(--light-text-primary) !important;
+}
+
+/* Input with left icon */
+.form-input.pl-10 {
+  padding-left: 2.5rem;
+}
+
+/* Input with right icon */
+.form-input.pr-10 {
+  padding-right: 2.5rem;
+}
+
+.form-label {
+  color: var(--light-text-primary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.btn-primary {
+  @apply bg-brand-teal hover:bg-opacity-90 text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-teal focus:ring-offset-2 focus:ring-offset-dark-bg-primary;
+}
+
+.btn-secondary {
+  @apply bg-dark-bg-secondary hover:bg-dark-border text-light-text-primary font-medium py-2 px-6 rounded-lg border border-dark-border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-dark-border;
+}
+
+.btn-disabled {
+  @apply bg-gray-600 text-gray-400 font-medium py-2 px-6 rounded-lg cursor-not-allowed opacity-50;
+}
+
+.btn-outline {
+  @apply bg-transparent border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-teal;
+}
+
+.card {
+  @apply bg-dark-bg-secondary border border-dark-border rounded-lg p-6 shadow-lg;
+}
+
+/* Loading spinner */
+.spinner {
+  @apply animate-spin rounded-full h-6 w-6 border-b-2 border-brand-teal;
+}
