@@ -135,56 +135,70 @@ export const generatePDF = async (invoiceData) => {
 const generateInvoiceHTML = (invoiceData) => {
   const { sender, receiver, details, invoiceNumber } = invoiceData;
   
+  // Ensure we have valid data
+  const safeSender = sender || {};
+  const safeReceiver = receiver || {};
+  const safeDetails = details || {};
+  const safeItems = safeDetails.items || [];
+  
   // Calculate totals
-  const subtotal = details.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-  const discountAmount = details.discountDetails?.amountType === 'percentage' 
-    ? (subtotal * details.discountDetails.amount / 100)
-    : (details.discountDetails?.amount || 0);
-  const taxAmount = details.taxDetails?.amountType === 'percentage'
-    ? ((subtotal - discountAmount) * details.taxDetails.amount / 100)
-    : (details.taxDetails?.amount || 0);
-  const shippingAmount = details.shippingDetails?.costType === 'percentage'
-    ? (subtotal * details.shippingDetails.cost / 100)
-    : (details.shippingDetails?.cost || 0);
+  const subtotal = safeItems.reduce((sum, item) => {
+    const quantity = item.quantity || 0;
+    const unitPrice = item.unitPrice || 0;
+    return sum + (quantity * unitPrice);
+  }, 0);
+  
+  const discountAmount = safeDetails.discountDetails?.amountType === 'percentage' 
+    ? (subtotal * (safeDetails.discountDetails.amount || 0) / 100)
+    : (safeDetails.discountDetails?.amount || 0);
+    
+  const taxAmount = safeDetails.taxDetails?.amountType === 'percentage'
+    ? ((subtotal - discountAmount) * (safeDetails.taxDetails.amount || 0) / 100)
+    : (safeDetails.taxDetails?.amount || 0);
+    
+  const shippingAmount = safeDetails.shippingDetails?.costType === 'percentage'
+    ? (subtotal * (safeDetails.shippingDetails.cost || 0) / 100)
+    : (safeDetails.shippingDetails?.cost || 0);
+    
   const total = subtotal - discountAmount + taxAmount + shippingAmount;
 
   return `
     <div class="invoice-container">
       <div class="header">
         <div class="company-info">
-          <h1>${sender.name}</h1>
-          <p>${sender.address}<br>
-          ${sender.city}, ${sender.zipCode}<br>
-          ${sender.country}</p>
-          <p>Email: ${sender.email}<br>
-          Phone: ${sender.phone}</p>
+          <h1>${safeSender.name || 'Company Name'}</h1>
+          <p>${safeSender.address || ''}<br>
+          ${safeSender.city || ''}, ${safeSender.zipCode || ''}<br>
+          ${safeSender.country || ''}</p>
+          <p>Email: ${safeSender.email || ''}<br>
+          Phone: ${safeSender.phone || ''}</p>
         </div>
         <div class="invoice-info">
           <h2>INVOICE</h2>
-          <p><strong>Invoice #:</strong> ${invoiceNumber}</p>
-          <p><strong>Date:</strong> ${new Date(details.invoiceDate).toLocaleDateString()}</p>
-          <p><strong>Due Date:</strong> ${new Date(details.dueDate).toLocaleDateString()}</p>
+          <p><strong>Invoice #:</strong> ${invoiceNumber || 'N/A'}</p>
+          <p><strong>Date:</strong> ${safeDetails.invoiceDate ? new Date(safeDetails.invoiceDate).toLocaleDateString() : 'N/A'}</p>
+          <p><strong>Due Date:</strong> ${safeDetails.dueDate ? new Date(safeDetails.dueDate).toLocaleDateString() : 'N/A'}</p>
         </div>
       </div>
 
       <div class="parties">
         <div class="party">
           <h3>Bill To:</h3>
-          <p><strong>${receiver.name}</strong><br>
-          ${receiver.address || ''}<br>
-          ${receiver.city ? receiver.city + ', ' : ''}${receiver.zipCode || ''}<br>
-          ${receiver.country || ''}</p>
-          ${receiver.email ? `<p>Email: ${receiver.email}</p>` : ''}
-          ${receiver.phone ? `<p>Phone: ${receiver.phone}</p>` : ''}
+          <p><strong>${safeReceiver.name || 'Client Name'}</strong><br>
+          ${safeReceiver.address || ''}<br>
+          ${safeReceiver.city ? safeReceiver.city + ', ' : ''}${safeReceiver.zipCode || ''}<br>
+          ${safeReceiver.country || ''}</p>
+          ${safeReceiver.email ? `<p>Email: ${safeReceiver.email}</p>` : ''}
+          ${safeReceiver.phone ? `<p>Phone: ${safeReceiver.phone}</p>` : ''}
         </div>
         <div class="party">
           <h3>Payment Terms:</h3>
-          <p>${details.paymentTerms || 'Net 30'}</p>
-          ${details.paymentInformation?.bankName ? `
+          <p>${safeDetails.paymentTerms || 'Net 30'}</p>
+          ${safeDetails.paymentInformation?.bankName ? `
             <h3>Payment Information:</h3>
-            <p><strong>Bank:</strong> ${details.paymentInformation.bankName}<br>
-            <strong>Account:</strong> ${details.paymentInformation.accountName}<br>
-            <strong>Account #:</strong> ${details.paymentInformation.accountNumber}</p>
+            <p><strong>Bank:</strong> ${safeDetails.paymentInformation.bankName}<br>
+            <strong>Account:</strong> ${safeDetails.paymentInformation.accountName}<br>
+            <strong>Account #:</strong> ${safeDetails.paymentInformation.accountNumber}</p>
           ` : ''}
         </div>
       </div>
@@ -199,15 +213,15 @@ const generateInvoiceHTML = (invoiceData) => {
           </tr>
         </thead>
         <tbody>
-          ${details.items.map(item => `
+          ${safeItems.map(item => `
             <tr>
               <td>
-                <strong>${item.name}</strong>
+                <strong>${item.name || 'Item'}</strong>
                 ${item.description ? `<br><small>${item.description}</small>` : ''}
               </td>
-              <td>${item.quantity}</td>
-              <td>${item.unitPrice.toFixed(2)} ${details.currency}</td>
-              <td>${(item.quantity * item.unitPrice).toFixed(2)} ${details.currency}</td>
+              <td>${item.quantity || 0}</td>
+              <td>${(item.unitPrice || 0).toFixed(2)} ${safeDetails.currency || 'USD'}</td>
+              <td>${((item.quantity || 0) * (item.unitPrice || 0)).toFixed(2)} ${safeDetails.currency || 'USD'}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -217,46 +231,46 @@ const generateInvoiceHTML = (invoiceData) => {
         <table>
           <tr>
             <td>Subtotal:</td>
-            <td>${subtotal.toFixed(2)} ${details.currency}</td>
+            <td>${subtotal.toFixed(2)} ${safeDetails.currency || 'USD'}</td>
           </tr>
           ${discountAmount > 0 ? `
             <tr>
               <td>Discount:</td>
-              <td>-${discountAmount.toFixed(2)} ${details.currency}</td>
+              <td>-${discountAmount.toFixed(2)} ${safeDetails.currency || 'USD'}</td>
             </tr>
           ` : ''}
           ${taxAmount > 0 ? `
             <tr>
               <td>Tax:</td>
-              <td>${taxAmount.toFixed(2)} ${details.currency}</td>
+              <td>${taxAmount.toFixed(2)} ${safeDetails.currency || 'USD'}</td>
             </tr>
           ` : ''}
           ${shippingAmount > 0 ? `
             <tr>
               <td>Shipping:</td>
-              <td>${shippingAmount.toFixed(2)} ${details.currency}</td>
+              <td>${shippingAmount.toFixed(2)} ${safeDetails.currency || 'USD'}</td>
             </tr>
           ` : ''}
           <tr class="total-row">
             <td><strong>Total:</strong></td>
-            <td><strong>${total.toFixed(2)} ${details.currency}</strong></td>
+            <td><strong>${total.toFixed(2)} ${safeDetails.currency || 'USD'}</strong></td>
           </tr>
         </table>
       </div>
 
       <div style="clear: both;"></div>
 
-      ${details.additionalNotes ? `
+      ${safeDetails.additionalNotes ? `
         <div style="margin-top: 30px;">
           <h3>Notes:</h3>
-          <p>${details.additionalNotes}</p>
+          <p>${safeDetails.additionalNotes}</p>
         </div>
       ` : ''}
 
-      ${details.signature?.data ? `
+      ${safeDetails.signature?.data ? `
         <div class="signature">
-          <div class="signature-text" style="font-family: '${details.signature.fontFamily || 'Great Vibes'}', cursive;">
-            ${details.signature.data}
+          <div class="signature-text" style="font-family: '${safeDetails.signature.fontFamily || 'Great Vibes'}', cursive;">
+            ${safeDetails.signature.data}
           </div>
           <div style="border-top: 1px solid #333; width: 200px; margin-left: auto; margin-top: 5px;"></div>
           <small>Authorized Signature</small>
