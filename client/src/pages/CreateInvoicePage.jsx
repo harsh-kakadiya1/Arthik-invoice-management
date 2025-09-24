@@ -1,7 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/Layout/MainLayout';
 import { useInvoice } from '../context/InvoiceContext';
-import { FiCheck } from 'react-icons/fi';
+import { FiCheck, FiArrowLeft } from 'react-icons/fi';
 import InvoicePreview from '../components/InvoicePreview';
 import FromToStep from '../components/FormSteps/FromToStep';
 import InvoiceDetailsStep from '../components/FormSteps/InvoiceDetailsStep';
@@ -11,6 +12,7 @@ import SummaryStep from '../components/FormSteps/SummaryStep';
 
 const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
   const { currentStep, setCurrentStep } = useInvoice();
+  const navigate = useNavigate();
 
   const steps = [
     { id: 0, name: 'From & To', description: 'Sender and receiver information' },
@@ -42,12 +44,28 @@ const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-light-text-primary">
-            {isEditMode ? 'Edit Invoice' : 'Create Invoice'}
-          </h1>
-          <p className="text-light-text-secondary mt-1">
-            {isEditMode ? 'Update your invoice details' : 'Follow the steps to create your invoice'}
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-light-text-primary">
+                {isEditMode ? 'Edit Invoice' : 'Create Invoice'}
+              </h1>
+              <p className="text-light-text-secondary mt-1">
+                {isEditMode ? 'Update your invoice details' : 'Follow the steps to create your invoice'}
+              </p>
+            </div>
+            {isEditMode && (
+              <button
+                onClick={() => {
+                  // This will trigger the update in SummaryStep
+                  setCurrentStep(4);
+                }}
+                className="btn-primary flex items-center space-x-2"
+              >
+                <FiCheck className="h-4 w-4" />
+                <span>Update Invoice</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Step Indicator */}

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiDownload, FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiArrowLeft, FiDownload, FiEdit, FiTrash2, FiChevronDown } from 'react-icons/fi';
 import Header from '../components/Layout/Header';
 import api from '../lib/api';
 import { formatDate } from '../lib/helpers';
 import { generatePDF } from '../lib/pdfGenerator';
+import { INVOICE_STATUSES } from '../lib/variables';
 
 const InvoiceViewPage = () => {
   const { id } = useParams();
@@ -12,10 +13,26 @@ const InvoiceViewPage = () => {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   useEffect(() => {
     fetchInvoice();
   }, [id]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showStatusDropdown && !event.target.closest('.status-dropdown')) {
+        setShowStatusDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showStatusDropdown]);
 
   const fetchInvoice = async () => {
     try {
@@ -44,6 +61,21 @@ const InvoiceViewPage = () => {
       await generatePDF(invoice);
     } catch (error) {
       setError('Failed to generate PDF. Please try again.');
+    }
+  };
+
+  const handleStatusUpdate = async (newStatus) => {
+    setUpdatingStatus(true);
+    setError('');
+    
+    try {
+      const response = await api.put(`/invoices/${id}`, { status: newStatus });
+      setInvoice(response.data.data);
+      setShowStatusDropdown(false);
+    } catch (error) {
+      setError(error.response?.data?.error || 'Failed to update status');
+    } finally {
+      setUpdatingStatus(false);
     }
   };
 
@@ -106,9 +138,32 @@ const InvoiceViewPage = () => {
             <h1 className="text-2xl font-bold text-light-text-primary">
               Invoice {invoice.invoiceNumber}
             </h1>
-            <span className={`capitalize px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(invoice.status)}`}>
-              {invoice.status}
-            </span>
+            <div className="relative status-dropdown">
+              <button
+                onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                disabled={updatingStatus}
+                className={`capitalize px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 hover:opacity-80 transition-opacity ${getStatusColor(invoice.status)} ${updatingStatus ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <span>{invoice.status}</span>
+                <FiChevronDown className="h-3 w-3" />
+              </button>
+              
+              {showStatusDropdown && (
+                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-dark-bg-secondary border border-dark-border rounded-lg shadow-xl z-[9999] min-w-[120px] max-h-48 overflow-y-auto">
+                  {INVOICE_STATUSES.map((status) => (
+                    <button
+                      key={status.value}
+                      onClick={() => handleStatusUpdate(status.value)}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-dark-bg-primary transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                        invoice.status === status.value ? 'bg-brand-teal bg-opacity-10 text-brand-teal' : 'text-light-text-primary'
+                      }`}
+                    >
+                      {status.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center space-x-3">
