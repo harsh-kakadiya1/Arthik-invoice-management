@@ -14,6 +14,8 @@ const DashboardPage = () => {
   const [updatingStatus, setUpdatingStatus] = useState(null);
   const [showStatusDropdown, setShowStatusDropdown] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState('bottom');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
 
   useEffect(() => {
     fetchInvoices();
@@ -45,18 +47,28 @@ const DashboardPage = () => {
     }
   };
 
-  const deleteInvoice = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this invoice?')) {
-      return;
-    }
+  const handleDeleteClick = (invoice) => {
+    setInvoiceToDelete(invoice);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!invoiceToDelete) return;
 
     try {
-      await api.delete(`/invoices/${id}`);
-      setInvoices(invoices.filter(invoice => invoice._id !== id));
+      await api.delete(`/invoices/${invoiceToDelete._id}`);
+      setInvoices(invoices.filter(invoice => invoice._id !== invoiceToDelete._id));
+      setShowDeleteModal(false);
+      setInvoiceToDelete(null);
     } catch (error) {
       console.error('Error deleting invoice:', error);
-      alert('Failed to delete invoice');
+      setError('Failed to delete invoice');
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setInvoiceToDelete(null);
   };
 
   const handleDownloadPDF = async (invoice) => {
@@ -275,7 +287,7 @@ const DashboardPage = () => {
                             <FiEdit className="h-4 w-4" />
                           </Link>
                           <button
-                            onClick={() => deleteInvoice(invoice._id)}
+                            onClick={() => handleDeleteClick(invoice)}
                             className="text-state-danger hover:text-opacity-80 transition-colors"
                             title="Delete"
                           >
@@ -314,6 +326,42 @@ const DashboardPage = () => {
             </div>
           )}
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-dark-bg-secondary rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0 w-10 h-10 mx-auto bg-state-danger bg-opacity-10 rounded-full flex items-center justify-center">
+                  <FiTrash2 className="h-5 w-5 text-state-danger" />
+                </div>
+              </div>
+              <div className="text-center">
+                <h3 className="text-lg font-medium text-light-text-primary mb-2">
+                  Delete Invoice
+                </h3>
+                <p className="text-light-text-secondary mb-6">
+                  Are you sure you want to delete invoice <span className="font-medium">{invoiceToDelete?.invoiceNumber}</span>? 
+                  This action cannot be undone.
+                </p>
+                <div className="flex space-x-3 justify-center">
+                  <button
+                    onClick={cancelDelete}
+                    className="btn-secondary px-6"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="bg-state-danger hover:bg-state-danger-dark text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

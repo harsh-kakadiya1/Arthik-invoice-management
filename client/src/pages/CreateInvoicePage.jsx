@@ -54,16 +54,25 @@ const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
               </p>
             </div>
             {isEditMode && (
-              <button
-                onClick={() => {
-                  // This will trigger the update in SummaryStep
-                  setCurrentStep(4);
-                }}
-                className="btn-primary flex items-center space-x-2"
-              >
-                <FiCheck className="h-4 w-4" />
-                <span>Update Invoice</span>
-              </button>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => navigate('/')}
+                  className="btn-secondary flex items-center space-x-2"
+                >
+                  <FiArrowLeft className="h-4 w-4" />
+                  <span>Back</span>
+                </button>
+                <button
+                  onClick={() => {
+                    // This will trigger the update in SummaryStep
+                    setCurrentStep(4);
+                  }}
+                  className="btn-primary flex items-center space-x-2"
+                >
+                  <FiCheck className="h-4 w-4" />
+                  <span>Update Invoice</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
