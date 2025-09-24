@@ -127,6 +127,60 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false }) =
     });
   };
 
+  const moveItem = (fromIndex, toIndex) => {
+    const items = [...invoiceData.details.items];
+    const [movedItem] = items.splice(fromIndex, 1);
+    items.splice(toIndex, 0, movedItem);
+    
+    updateInvoiceData({
+      details: {
+        ...invoiceData.details,
+        items
+      }
+    });
+  };
+
+  const duplicateItem = (index) => {
+    const itemToDuplicate = invoiceData.details.items[index];
+    if (itemToDuplicate) {
+      const duplicatedItem = {
+        ...itemToDuplicate,
+        name: itemToDuplicate.name ? itemToDuplicate.name + ' (Copy)' : '',
+        description: itemToDuplicate.description ? itemToDuplicate.description + ' (Copy)' : ''
+      };
+      
+      const newItems = [...invoiceData.details.items];
+      newItems.splice(index + 1, 0, duplicatedItem);
+      
+      updateInvoiceData({
+        details: {
+          ...invoiceData.details,
+          items: newItems
+        }
+      });
+    }
+  };
+
+  const updateItem = (index, field, value) => {
+    const updatedItems = invoiceData.details.items.map((item, i) => {
+      if (i === index) {
+        const updatedItem = { ...item, [field]: value };
+        if (field === 'quantity' || field === 'unitPrice') {
+          updatedItem.total = updatedItem.quantity * updatedItem.unitPrice;
+        }
+        return updatedItem;
+      }
+      return item;
+    });
+
+    updateInvoiceData({
+      details: {
+        ...invoiceData.details,
+        items: updatedItems
+      }
+    });
+  };
+
   const value = {
     invoiceData,
     updateInvoiceData,
@@ -134,7 +188,10 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false }) =
     currentStep,
     setCurrentStep,
     addItem,
-    removeItem
+    removeItem,
+    moveItem,
+    duplicateItem,
+    updateItem
   };
 
   return (

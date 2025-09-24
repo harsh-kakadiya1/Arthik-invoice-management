@@ -130,6 +130,73 @@ const InvoiceDetailsStep = () => {
             </div>
           </div>
 
+          {/* Company Logo Upload */}
+          <div className="card">
+            <h4 className="text-lg font-medium text-light-text-primary mb-4">Company Logo</h4>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                {invoiceData.details.invoiceLogo && (
+                  <div className="flex-shrink-0">
+                    <img
+                      src={invoiceData.details.invoiceLogo}
+                      alt="Company Logo"
+                      className="h-16 w-16 object-contain border border-dark-border rounded-lg"
+                    />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    id="logo-upload"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          updateInvoiceData({
+                            details: {
+                              ...invoiceData.details,
+                              invoiceLogo: event.target.result
+                            }
+                          });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="logo-upload"
+                    className="btn-secondary cursor-pointer inline-flex items-center"
+                  >
+                    Upload Logo
+                  </label>
+                  <p className="text-sm text-light-text-secondary mt-1">
+                    Upload your company logo (PNG, JPG, or SVG)
+                  </p>
+                </div>
+                {invoiceData.details.invoiceLogo && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateInvoiceData({
+                        details: {
+                          ...invoiceData.details,
+                          invoiceLogo: ''
+                        }
+                      });
+                    }}
+                    className="text-state-danger hover:text-red-600 transition-colors p-2"
+                    title="Remove logo"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Template Selection */}
           <div className="card">
             <h4 className="text-lg font-medium text-light-text-primary mb-4">Choose Template</h4>

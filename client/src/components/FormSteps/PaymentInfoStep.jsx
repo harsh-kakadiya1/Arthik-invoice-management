@@ -1,39 +1,13 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useState } from 'react';
 import { useInvoice } from '../../context/InvoiceContext';
 import { PAYMENT_TERMS } from '../../lib/variables';
 import { FiCreditCard, FiFileText, FiEdit3 } from 'react-icons/fi';
+import SignatureModal from '../SignatureModal';
 
 const PaymentInfoStep = () => {
   const { invoiceData, updateInvoiceData } = useInvoice();
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   
-  const {
-    register,
-    handleSubmit,
-    formState: { errors }
-  } = useForm({
-    defaultValues: {
-      details: {
-        paymentTerms: invoiceData.details.paymentTerms,
-        additionalNotes: invoiceData.details.additionalNotes,
-        paymentInformation: invoiceData.details.paymentInformation,
-        signature: invoiceData.details.signature
-      }
-    }
-  });
-
-  const onSubmit = (data) => {
-    updateInvoiceData({
-      details: {
-        ...invoiceData.details,
-        paymentTerms: data.details.paymentTerms,
-        additionalNotes: data.details.additionalNotes,
-        paymentInformation: data.details.paymentInformation,
-        signature: data.details.signature
-      }
-    });
-  };
-
   return (
     <div className="space-y-8">
       <div>
@@ -51,11 +25,14 @@ const PaymentInfoStep = () => {
               <div>
                 <label className="form-label">Payment Terms</label>
                 <select
-                  {...register('details.paymentTerms')}
                   className="form-input w-full"
+                  value={invoiceData.details.paymentTerms}
                   onChange={(e) => {
                     updateInvoiceData({
-                      details: { ...invoiceData.details, paymentTerms: e.target.value }
+                      details: {
+                        ...invoiceData.details,
+                        paymentTerms: e.target.value
+                      }
                     });
                   }}
                 >
@@ -67,68 +44,66 @@ const PaymentInfoStep = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="form-label">Bank Name</label>
-                  <input
-                    {...register('details.paymentInformation.bankName')}
-                    type="text"
-                    className="form-input w-full"
-                    placeholder="Bank of Nations"
-                    onChange={(e) => {
-                      updateInvoiceData({
-                        details: {
-                          ...invoiceData.details,
-                          paymentInformation: {
-                            ...invoiceData.details.paymentInformation,
-                            bankName: e.target.value
+              <div>
+                <label className="form-label">Payment Information</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <input
+                      type="text"
+                      className="form-input w-full"
+                      placeholder="Bank Name"
+                      value={invoiceData.details.paymentInformation?.bankName || ''}
+                      onChange={(e) => {
+                        updateInvoiceData({
+                          details: {
+                            ...invoiceData.details,
+                            paymentInformation: {
+                              ...invoiceData.details.paymentInformation,
+                              bankName: e.target.value
+                            }
                           }
-                        }
-                      });
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="form-label">Account Name</label>
-                  <input
-                    {...register('details.paymentInformation.accountName')}
-                    type="text"
-                    className="form-input w-full"
-                    placeholder="Your Company Inc."
-                    onChange={(e) => {
-                      updateInvoiceData({
-                        details: {
-                          ...invoiceData.details,
-                          paymentInformation: {
-                            ...invoiceData.details.paymentInformation,
-                            accountName: e.target.value
+                        });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      className="form-input w-full"
+                      placeholder="Account Name"
+                      value={invoiceData.details.paymentInformation?.accountName || ''}
+                      onChange={(e) => {
+                        updateInvoiceData({
+                          details: {
+                            ...invoiceData.details,
+                            paymentInformation: {
+                              ...invoiceData.details.paymentInformation,
+                              accountName: e.target.value
+                            }
                           }
-                        }
-                      });
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="form-label">Account Number</label>
-                  <input
-                    {...register('details.paymentInformation.accountNumber')}
-                    type="text"
-                    className="form-input w-full"
-                    placeholder="1234567890"
-                    onChange={(e) => {
-                      updateInvoiceData({
-                        details: {
-                          ...invoiceData.details,
-                          paymentInformation: {
-                            ...invoiceData.details.paymentInformation,
-                            accountNumber: e.target.value
+                        });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      className="form-input w-full"
+                      placeholder="Account Number"
+                      value={invoiceData.details.paymentInformation?.accountNumber || ''}
+                      onChange={(e) => {
+                        updateInvoiceData({
+                          details: {
+                            ...invoiceData.details,
+                            paymentInformation: {
+                              ...invoiceData.details.paymentInformation,
+                              accountNumber: e.target.value
+                            }
                           }
-                        }
-                      });
-                    }}
-                  />
+                        });
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -138,109 +113,133 @@ const PaymentInfoStep = () => {
           <div className="card">
             <h4 className="text-lg font-medium text-light-text-primary mb-4 flex items-center">
               <FiFileText className="mr-2" />
-              Additional Information
+              Additional Notes
             </h4>
             
             <div>
-              <label className="form-label">Additional Notes</label>
+              <label className="form-label">Notes</label>
               <textarea
-                {...register('details.additionalNotes')}
-                className="form-input w-full resize-none"
+                className="form-input w-full"
                 rows="4"
-                placeholder="Thank you for your business! Please contact us if you have any questions."
+                placeholder="Add any additional notes, terms, or conditions..."
+                value={invoiceData.details.additionalNotes || ''}
                 onChange={(e) => {
                   updateInvoiceData({
-                    details: { ...invoiceData.details, additionalNotes: e.target.value }
+                    details: {
+                      ...invoiceData.details,
+                      additionalNotes: e.target.value
+                    }
                   });
                 }}
               />
               <p className="mt-1 text-sm text-light-text-secondary">
-                Add any additional information, special instructions, or thank you message.
+                Any additional information you want to include on the invoice
               </p>
             </div>
           </div>
 
-          {/* Signature */}
+          {/* Enhanced Signature Section */}
           <div className="card">
             <h4 className="text-lg font-medium text-light-text-primary mb-4 flex items-center">
               <FiEdit3 className="mr-2" />
-              Signature
+              Digital Signature
             </h4>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="form-label">Signature Text</label>
-                <input
-                  {...register('details.signature.data')}
-                  type="text"
-                  className="form-input w-full font-signature"
-                  placeholder="Your Name"
-                  style={{
-                    fontFamily: `${invoiceData.details.signature?.fontFamily || 'Great Vibes'}, cursive`,
-                    fontSize: '18px'
-                  }}
-                  onChange={(e) => {
-                    updateInvoiceData({
-                      details: {
-                        ...invoiceData.details,
-                        signature: {
-                          ...invoiceData.details.signature,
-                          data: e.target.value
-                        }
-                      }
-                    });
-                  }}
-                />
-                <p className="mt-1 text-sm text-light-text-secondary">
-                  Enter your name or signature text
-                </p>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-light-text-secondary text-sm mb-2">
+                    Add your signature to make the invoice official
+                  </p>
+                  {!invoiceData.details.signature?.data ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsSignatureModalOpen(true)}
+                      className="btn-primary flex items-center space-x-2"
+                    >
+                      <FiEdit3 className="h-4 w-4" />
+                      <span>Add Signature</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => setIsSignatureModalOpen(true)}
+                        className="btn-secondary flex items-center space-x-2"
+                      >
+                        <FiEdit3 className="h-4 w-4" />
+                        <span>Edit Signature</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateInvoiceData({
+                            details: {
+                              ...invoiceData.details,
+                              signature: null
+                            }
+                          });
+                        }}
+                        className="text-state-danger hover:text-red-600 transition-colors p-2"
+                        title="Remove signature"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div>
-                <label className="form-label">Font Family</label>
-                <select
-                  {...register('details.signature.fontFamily')}
-                  className="form-input w-full"
-                  onChange={(e) => {
-                    updateInvoiceData({
-                      details: {
-                        ...invoiceData.details,
-                        signature: {
-                          ...invoiceData.details.signature,
-                          fontFamily: e.target.value
-                        }
-                      }
-                    });
-                  }}
-                >
-                  <option value="Great Vibes">Great Vibes (Cursive)</option>
-                  <option value="Dancing Script">Dancing Script</option>
-                  <option value="Pacifico">Pacifico</option>
-                  <option value="Kaushan Script">Kaushan Script</option>
-                  <option value="Satisfy">Satisfy</option>
-                </select>
-              </div>
+              {/* Signature Preview */}
+              {invoiceData.details.signature?.data && (
+                <div className="mt-4 p-4 bg-white rounded-lg border">
+                  <p className="text-sm text-gray-600 mb-3">
+                    Signature Preview:
+                  </p>
+                  {invoiceData.details.signature?.type === 'text' ? (
+                    <p
+                      style={{
+                        fontSize: 28,
+                        fontWeight: 400,
+                        fontFamily: `${invoiceData.details.signature.fontFamily || 'Great Vibes'}, cursive`,
+                        color: "black",
+                      }}
+                    >
+                      {invoiceData.details.signature.data}
+                    </p>
+                  ) : (
+                    <img
+                      src={invoiceData.details.signature.data}
+                      alt="Signature Preview"
+                      className="h-16 w-auto max-w-full"
+                    />
+                  )}
+                </div>
+              )}
             </div>
-
-            {/* Signature Preview */}
-            {invoiceData.details.signature?.data && (
-              <div className="mt-4 p-4 bg-white rounded-lg border">
-                <p className="text-sm text-gray-600 mb-2">Signature Preview:</p>
-                <p
-                  style={{
-                    fontSize: 24,
-                    fontWeight: 400,
-                    fontFamily: `${invoiceData.details.signature.fontFamily}, cursive`,
-                    color: "black",
-                  }}
-                >
-                  {invoiceData.details.signature.data}
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Signature Modal */}
+      <SignatureModal
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        onSave={(signatureData) => {
+          updateInvoiceData({
+            details: {
+              ...invoiceData.details,
+              signature: {
+                data: signatureData.data,
+                type: signatureData.type,
+                fontFamily: signatureData.fontFamily || 'Great Vibes',
+                color: signatureData.color
+              }
+            }
+          });
+        }}
+        initialSignature={invoiceData.details.signature?.data}
+      />
     </div>
   );
 };

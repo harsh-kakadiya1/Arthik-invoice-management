@@ -1,281 +1,243 @@
-// Simple PDF generation utility without external dependencies
-// This creates a basic PDF download functionality
-
+// Server-side PDF Generator using Puppeteer for perfect template rendering
 export const generatePDF = async (invoiceData) => {
   try {
-    // Create a new window with the invoice content
-    const printWindow = window.open('', '_blank');
+    console.log('🚀 Starting server-side PDF generation...');
     
-    // Generate HTML content for the invoice
-    const htmlContent = generateInvoiceHTML(invoiceData);
+    // Get the authentication token
+    const token = localStorage.getItem('token');
+    
+    // Send invoice data to server for PDF generation
+    const response = await fetch('http://localhost:5001/api/v1/pdf/generate-pdf', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(invoiceData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to generate PDF');
+    }
+
+    // Get PDF blob from response
+    const pdfBlob = await response.blob();
+    
+    // Create download URL
+    const url = window.URL.createObjectURL(pdfBlob);
+    
+    // Create temporary download link
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Invoice-${invoiceData.details.invoiceNumber || 'draft'}.pdf`;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    console.log('✅ PDF generated and downloaded successfully!');
+    return true;
+
+  } catch (error) {
+    console.error('❌ PDF generation failed:', error);
+    
+    // Show user-friendly error message
+    alert(`PDF generation failed: ${error.message}`);
+    
+    return false;
+  }
+};
+
+// Fallback client-side PDF generation (for testing)  
+export const generatePDFClientSide = async (invoiceData) => {
+  try {
+    console.log('🚀 Starting fallback client-side PDF generation...');
+    
+    // Extended wait for complete template rendering
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Try to find template element
+    let templateElement = document.querySelector('.invoice-preview-content') ||
+                         document.querySelector('[data-testid="invoice-preview"]') ||
+                         document.querySelector('.invoice-template');
+    
+    if (!templateElement) {
+      // Content-based search
+      const allElements = Array.from(document.querySelectorAll('div'));
+      templateElement = allElements.find(el => {
+        const text = el.textContent?.toLowerCase() || '';
+        const hasInvoiceContent = text.includes('invoice') && text.includes('bill to');
+        const isLargeEnough = el.offsetWidth > 500 && el.offsetHeight > 400;
+        return hasInvoiceContent && isLargeEnough;
+      });
+    }
+    
+    if (!templateElement) {
+      throw new Error('Cannot find template element for PDF generation');
+    }
+    
+    // Simple print-based PDF generation
+    const printWindow = window.open('', '_blank');
+    const templateHTML = templateElement.outerHTML;
     
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Invoice ${invoiceData.invoiceNumber}</title>
+          <title>Invoice-${invoiceData.details.invoiceNumber || 'draft'}</title>
           <style>
-            body { 
-              font-family: Arial, sans-serif; 
-              margin: 0; 
-              padding: 20px; 
-              background: white;
-              color: black;
-            }
-            .invoice-container { 
-              max-width: 800px; 
-              margin: 0 auto; 
-              background: white;
-              padding: 20px;
-            }
-            .header { 
-              display: flex; 
-              justify-content: space-between; 
-              margin-bottom: 30px; 
-              border-bottom: 2px solid #1B9AAA;
-              padding-bottom: 20px;
-            }
-            .company-info h1 { 
-              color: #1B9AAA; 
-              margin: 0; 
-              font-size: 28px;
-            }
-            .invoice-info { 
-              text-align: right; 
-            }
-            .invoice-info h2 { 
-              color: #333; 
-              margin: 0 0 10px 0; 
-            }
-            .parties { 
-              display: flex; 
-              justify-content: space-between; 
-              margin-bottom: 30px; 
-            }
-            .party { 
-              width: 45%; 
-            }
-            .party h3 { 
-              color: #1B9AAA; 
-              border-bottom: 1px solid #ddd; 
-              padding-bottom: 5px;
-            }
-            .items-table { 
-              width: 100%; 
-              border-collapse: collapse; 
-              margin-bottom: 20px; 
-            }
-            .items-table th, .items-table td { 
-              border: 1px solid #ddd; 
-              padding: 12px; 
-              text-align: left; 
-            }
-            .items-table th { 
-              background-color: #1B9AAA; 
-              color: white; 
-            }
-            .items-table tr:nth-child(even) { 
-              background-color: #f9f9f9; 
-            }
-            .totals { 
-              float: right; 
-              width: 300px; 
-              margin-top: 20px;
-            }
-            .totals table { 
-              width: 100%; 
-              border-collapse: collapse; 
-            }
-            .totals td { 
-              padding: 8px; 
-              border-bottom: 1px solid #ddd; 
-            }
-            .total-row { 
-              font-weight: bold; 
-              background-color: #1B9AAA; 
-              color: white; 
-            }
-            .signature { 
-              margin-top: 50px; 
-              text-align: right; 
-            }
-            .signature-text { 
-              font-family: 'Great Vibes', cursive; 
-              font-size: 24px; 
-              margin-bottom: 5px;
-            }
             @media print {
-              body { margin: 0; }
-              .invoice-container { padding: 0; }
+              body { margin: 0; padding: 20px; }
+              * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
             }
+            ${getBasicPrintStyles()}
           </style>
-          <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
         </head>
         <body>
-          ${htmlContent}
+          ${templateHTML}
         </body>
       </html>
     `);
     
     printWindow.document.close();
     
-    // Wait for content to load then trigger print
+    // Wait for content to load then print
     setTimeout(() => {
       printWindow.print();
       printWindow.close();
-    }, 500);
+    }, 1000);
     
     return true;
+    
   } catch (error) {
-    console.error('PDF generation error:', error);
-    throw new Error('Failed to generate PDF');
+    console.error('❌ Client-side PDF generation failed:', error);
+    alert(`PDF generation failed: ${error.message}`);
+    return false;
   }
 };
 
-const generateInvoiceHTML = (invoiceData) => {
-  const { sender, receiver, details, invoiceNumber } = invoiceData;
-  
-  // Ensure we have valid data
-  const safeSender = sender || {};
-  const safeReceiver = receiver || {};
-  const safeDetails = details || {};
-  const safeItems = safeDetails.items || [];
-  
-  // Calculate totals
-  const subtotal = safeItems.reduce((sum, item) => {
-    const quantity = item.quantity || 0;
-    const unitPrice = item.unitPrice || 0;
-    return sum + (quantity * unitPrice);
-  }, 0);
-  
-  const discountAmount = safeDetails.discountDetails?.amountType === 'percentage' 
-    ? (subtotal * (safeDetails.discountDetails.amount || 0) / 100)
-    : (safeDetails.discountDetails?.amount || 0);
-    
-  const taxAmount = safeDetails.taxDetails?.amountType === 'percentage'
-    ? ((subtotal - discountAmount) * (safeDetails.taxDetails.amount || 0) / 100)
-    : (safeDetails.taxDetails?.amount || 0);
-    
-  const shippingAmount = safeDetails.shippingDetails?.costType === 'percentage'
-    ? (subtotal * (safeDetails.shippingDetails.cost || 0) / 100)
-    : (safeDetails.shippingDetails?.cost || 0);
-    
-  const total = subtotal - discountAmount + taxAmount + shippingAmount;
-
+// Basic print styles for fallback
+const getBasicPrintStyles = () => {
   return `
-    <div class="invoice-container">
-      <div class="header">
-        <div class="company-info">
-          <h1>${safeSender.name || 'Company Name'}</h1>
-          <p>${safeSender.address || ''}<br>
-          ${safeSender.city || ''}, ${safeSender.zipCode || ''}<br>
-          ${safeSender.country || ''}</p>
-          <p>Email: ${safeSender.email || ''}<br>
-          Phone: ${safeSender.phone || ''}</p>
-        </div>
-        <div class="invoice-info">
-          <h2>INVOICE</h2>
-          <p><strong>Invoice #:</strong> ${invoiceNumber || 'N/A'}</p>
-          <p><strong>Date:</strong> ${safeDetails.invoiceDate ? new Date(safeDetails.invoiceDate).toLocaleDateString() : 'N/A'}</p>
-          <p><strong>Due Date:</strong> ${safeDetails.dueDate ? new Date(safeDetails.dueDate).toLocaleDateString() : 'N/A'}</p>
-        </div>
-      </div>
+    /* Template 4 Styles */
+    .template4-container {
+      display: flex !important;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .template4-sidebar {
+      width: 33.333333% !important;
+      background-color: #1f2937 !important;
+      color: white !important;
+      padding: 2rem !important;
+      flex-shrink: 0;
+    }
+    .template4-content {
+      width: 66.666667% !important;
+      padding: 2rem !important;
+      background-color: white !important;
+    }
+    
+    /* General Styles */
+    .grid { display: grid !important; }
+    .flex { display: flex !important; }
+    .justify-between { justify-content: space-between !important; }
+    .text-right { text-align: right !important; }
+    .text-center { text-align: center !important; }
+    .font-bold { font-weight: bold !important; }
+    .font-semibold { font-weight: 600 !important; }
+    .text-blue-600 { color: #2563eb !important; }
+    .text-blue-700 { color: #1d4ed8 !important; }
+    .text-gray-800 { color: #1f2937 !important; }
+    .text-gray-600 { color: #4b5563 !important; }
+    .text-gray-500 { color: #6b7280 !important; }
+    .bg-gray-50 { background-color: #f9fafb !important; }
+    .border { border: 1px solid #e5e7eb !important; }
+    .border-b { border-bottom: 1px solid #e5e7eb !important; }
+    .border-gray-200 { border-color: #e5e7eb !important; }
+    .rounded-lg { border-radius: 0.5rem !important; }
+    .p-1 { padding: 0.25rem !important; }
+    .p-2 { padding: 0.5rem !important; }
+    .py-2 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+    .px-1 { padding-left: 0.25rem !important; padding-right: 0.25rem !important; }
+    .mt-2 { margin-top: 0.5rem !important; }
+    .mt-4 { margin-top: 1rem !important; }
+    .mt-6 { margin-top: 1.5rem !important; }
+    .mt-8 { margin-top: 2rem !important; }
+    .mb-2 { margin-bottom: 0.5rem !important; }
+    .mb-4 { margin-bottom: 1rem !important; }
+    .mb-6 { margin-bottom: 1.5rem !important; }
+    .mb-8 { margin-bottom: 2rem !important; }
+    .space-y-2 > * + * { margin-top: 0.5rem !important; }
+    .space-y-1 > * + * { margin-top: 0.25rem !important; }
+    .gap-3 { gap: 0.75rem !important; }
+    .gap-x-3 { column-gap: 0.75rem !important; }
+    .gap-y-1 { row-gap: 0.25rem !important; }
+    .col-span-2 { grid-column: span 2 / span 2 !important; }
+    .col-span-3 { grid-column: span 3 / span 3 !important; }
+    .col-span-5 { grid-column: span 5 / span 5 !important; }
+    .col-span-full { grid-column: 1 / -1 !important; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+    .grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+    .grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+    .text-xs { font-size: 0.75rem !important; }
+    .text-sm { font-size: 0.875rem !important; }
+    .text-lg { font-size: 1.125rem !important; }
+    .text-xl { font-size: 1.25rem !important; }
+    .text-2xl { font-size: 1.5rem !important; }
+    .text-3xl { font-size: 1.875rem !important; }
+    .text-4xl { font-size: 2.25rem !important; }
+    .max-w-sm { max-width: 24rem !important; }
+    .w-full { width: 100% !important; }
+    .not-italic { font-style: normal !important; }
+    .uppercase { text-transform: uppercase !important; }
+    .font-medium { font-weight: 500 !important; }
+    .font-extrabold { font-weight: 800 !important; }
+    .italic { font-style: italic !important; }
+    .inline-block { display: inline-block !important; }
+    .hidden { display: none !important; }
+    .block { display: block !important; }
+    .pt-2 { padding-top: 0.5rem !important; }
+    .pt-6 { padding-top: 1.5rem !important; }
+    .pb-1 { padding-bottom: 0.25rem !important; }
+    .pb-2 { padding-bottom: 0.5rem !important; }
+    .border-t { border-top: 1px solid #e5e7eb !important; }
+    .border-blue-200 { border-color: #dbeafe !important; }
+    .border-gray-100 { border-color: #f3f4f6 !important; }
+    .border-gray-300 { border-color: #d1d5db !important; }
+    .text-gray-100 { color: #f3f4f6 !important; }
+    .text-gray-200 { color: #e5e7eb !important; }
+    .text-gray-300 { color: #d1d5db !important; }
+    .text-gray-400 { color: #9ca3af !important; }
+    .text-gray-700 { color: #374151 !important; }
+    .text-gray-900 { color: #111827 !important; }
+    .bg-white { background-color: white !important; }
+    .min-h-screen { min-height: 100vh !important; }
 
-      <div class="parties">
-        <div class="party">
-          <h3>Bill To:</h3>
-          <p><strong>${safeReceiver.name || 'Client Name'}</strong><br>
-          ${safeReceiver.address || ''}<br>
-          ${safeReceiver.city ? safeReceiver.city + ', ' : ''}${safeReceiver.zipCode || ''}<br>
-          ${safeReceiver.country || ''}</p>
-          ${safeReceiver.email ? `<p>Email: ${safeReceiver.email}</p>` : ''}
-          ${safeReceiver.phone ? `<p>Phone: ${safeReceiver.phone}</p>` : ''}
-        </div>
-        <div class="party">
-          <h3>Payment Terms:</h3>
-          <p>${safeDetails.paymentTerms || 'Net 30'}</p>
-          ${safeDetails.paymentInformation?.bankName ? `
-            <h3>Payment Information:</h3>
-            <p><strong>Bank:</strong> ${safeDetails.paymentInformation.bankName}<br>
-            <strong>Account:</strong> ${safeDetails.paymentInformation.accountName}<br>
-            <strong>Account #:</strong> ${safeDetails.paymentInformation.accountNumber}</p>
-          ` : ''}
-        </div>
-      </div>
-
-      <table class="items-table">
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Qty</th>
-            <th>Rate</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${safeItems.map(item => `
-            <tr>
-              <td>
-                <strong>${item.name || 'Item'}</strong>
-                ${item.description ? `<br><small>${item.description}</small>` : ''}
-              </td>
-              <td>${item.quantity || 0}</td>
-              <td>${(item.unitPrice || 0).toFixed(2)} ${safeDetails.currency || 'USD'}</td>
-              <td>${((item.quantity || 0) * (item.unitPrice || 0)).toFixed(2)} ${safeDetails.currency || 'USD'}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-
-      <div class="totals">
-        <table>
-          <tr>
-            <td>Subtotal:</td>
-            <td>${subtotal.toFixed(2)} ${safeDetails.currency || 'USD'}</td>
-          </tr>
-          ${discountAmount > 0 ? `
-            <tr>
-              <td>Discount:</td>
-              <td>-${discountAmount.toFixed(2)} ${safeDetails.currency || 'USD'}</td>
-            </tr>
-          ` : ''}
-          ${taxAmount > 0 ? `
-            <tr>
-              <td>Tax:</td>
-              <td>${taxAmount.toFixed(2)} ${safeDetails.currency || 'USD'}</td>
-            </tr>
-          ` : ''}
-          ${shippingAmount > 0 ? `
-            <tr>
-              <td>Shipping:</td>
-              <td>${shippingAmount.toFixed(2)} ${safeDetails.currency || 'USD'}</td>
-            </tr>
-          ` : ''}
-          <tr class="total-row">
-            <td><strong>Total:</strong></td>
-            <td><strong>${total.toFixed(2)} ${safeDetails.currency || 'USD'}</strong></td>
-          </tr>
-        </table>
-      </div>
-
-      <div style="clear: both;"></div>
-
-      ${safeDetails.additionalNotes ? `
-        <div style="margin-top: 30px;">
-          <h3>Notes:</h3>
-          <p>${safeDetails.additionalNotes}</p>
-        </div>
-      ` : ''}
-
-      ${safeDetails.signature?.data ? `
-        <div class="signature">
-          <div class="signature-text" style="font-family: '${safeDetails.signature.fontFamily || 'Great Vibes'}', cursive;">
-            ${safeDetails.signature.data}
-          </div>
-          <div style="border-top: 1px solid #333; width: 200px; margin-left: auto; margin-top: 5px;"></div>
-          <small>Authorized Signature</small>
-        </div>
-      ` : ''}
-    </div>
+    /* Print-specific overrides */
+    @media print {
+      .template4-container {
+        width: 210mm !important;
+        min-height: 297mm !important;
+        margin: 0 !important;
+        page-break-inside: avoid;
+      }
+      .template4-sidebar {
+        background-color: #1f2937 !important;
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      img {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+    }
   `;
 };
