@@ -42,7 +42,7 @@ const RegisterPage = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <img 
-            src="/Invoice_test_images/Logo/Arthiik_logo.png" 
+            src="/Arthiik_logo.png" 
             alt="Arthik Logo" 
             className="mx-auto h-16 w-auto"
           />

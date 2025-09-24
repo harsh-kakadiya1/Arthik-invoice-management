@@ -8,14 +8,34 @@ const User = require('../models/User');
 exports.register = asyncHandler(async (req, res, next) => {
   const { name, email, password } = req.body;
 
-  // Create user
-  const user = await User.create({
-    name,
-    email,
-    password
-  });
+  console.log('Registration request body:', req.body);
+  console.log('Name:', name, 'Email:', email, 'Password length:', password ? password.length : 0);
 
-  sendTokenResponse(user, 200, res);
+  // Validate required fields
+  if (!name || !email || !password) {
+    return next(new ErrorResponse('Please provide name, email and password', 400));
+  }
+
+  try {
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      password
+    });
+
+    sendTokenResponse(user, 200, res);
+  } catch (error) {
+    console.log('User creation error:', error);
+    if (error.code === 11000) {
+      return next(new ErrorResponse('Email already exists', 400));
+    }
+    if (error.name === 'ValidationError') {
+      const message = Object.values(error.errors).map(val => val.message).join(', ');
+      return next(new ErrorResponse(message, 400));
+    }
+    return next(new ErrorResponse('Server error', 500));
+  }
 });
 
 // @desc    Login user
@@ -80,7 +100,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 
   const options = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+      Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
     ),
     httpOnly: true
   };

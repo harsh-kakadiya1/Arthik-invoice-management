@@ -4,6 +4,7 @@ import { FiArrowLeft, FiDownload, FiEdit, FiTrash2 } from 'react-icons/fi';
 import Header from '../components/Layout/Header';
 import api from '../lib/api';
 import { formatDate } from '../lib/helpers';
+import { generatePDF } from '../lib/pdfGenerator';
 
 const InvoiceViewPage = () => {
   const { id } = useParams();
@@ -38,8 +39,12 @@ const InvoiceViewPage = () => {
     }
   };
 
-  const handleDownloadPDF = () => {
-    alert('PDF download functionality will be implemented soon!');
+  const handleDownloadPDF = async () => {
+    try {
+      await generatePDF(invoice);
+    } catch (error) {
+      setError('Failed to generate PDF. Please try again.');
+    }
   };
 
   if (loading) {

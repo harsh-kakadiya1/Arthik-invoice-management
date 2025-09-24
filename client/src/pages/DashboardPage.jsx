@@ -5,6 +5,7 @@ import MainLayout from '../components/Layout/MainLayout';
 import api from '../lib/api';
 import { formatDate } from '../lib/helpers';
 import { INVOICE_STATUSES } from '../lib/variables';
+import { generatePDF } from '../lib/pdfGenerator';
 
 const DashboardPage = () => {
   const [invoices, setInvoices] = useState([]);
@@ -38,6 +39,14 @@ const DashboardPage = () => {
     } catch (error) {
       console.error('Error deleting invoice:', error);
       alert('Failed to delete invoice');
+    }
+  };
+
+  const handleDownloadPDF = async (invoice) => {
+    try {
+      await generatePDF(invoice);
+    } catch (error) {
+      setError('Failed to generate PDF. Please try again.');
     }
   };
 
@@ -174,6 +183,13 @@ const DashboardPage = () => {
                           >
                             <FiEye className="h-4 w-4" />
                           </Link>
+                          <button
+                            onClick={() => handleDownloadPDF(invoice)}
+                            className="text-green-500 hover:text-opacity-80 transition-colors"
+                            title="Download PDF"
+                          >
+                            <FiDownload className="h-4 w-4" />
+                          </button>
                           <Link
                             to={`/edit-invoice/${invoice._id}`}
                             className="text-blue-500 hover:text-opacity-80 transition-colors"
