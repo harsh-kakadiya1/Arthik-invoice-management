@@ -1,80 +1,14 @@
 import React from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
 import { useInvoice } from '../../context/InvoiceContext';
 import { FiPlus, FiTrash2, FiPackage } from 'react-icons/fi';
 
 const LineItemsStep = () => {
   const { invoiceData, updateInvoiceData, addItem, removeItem } = useInvoice();
-  
-  const {
-    register,
-    control,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors }
-  } = useForm({
-    defaultValues: {
-      details: {
-        items: invoiceData.details.items,
-        discountDetails: invoiceData.details.discountDetails,
-        taxDetails: invoiceData.details.taxDetails,
-        shippingDetails: invoiceData.details.shippingDetails
-      }
-    }
-  });
-
-  // Update form values when invoice data changes
-  React.useEffect(() => {
-    setValue('details.items', invoiceData.details.items);
-    setValue('details.discountDetails', invoiceData.details.discountDetails);
-    setValue('details.taxDetails', invoiceData.details.taxDetails);
-    setValue('details.shippingDetails', invoiceData.details.shippingDetails);
-  }, [invoiceData, setValue]);
-
-  const { fields } = useFieldArray({
-    control,
-    name: "details.items"
-  });
-
-  const watchedItems = watch("details.items");
-  const watchedDiscount = watch("details.discountDetails");
-  const watchedTax = watch("details.taxDetails");
-  const watchedShipping = watch("details.shippingDetails");
-
-  const onSubmit = (data) => {
-    // Calculate totals for each item
-    const itemsWithTotals = data.details.items.map(item => ({
-      ...item,
-      quantity: Number(item.quantity),
-      unitPrice: Number(item.unitPrice),
-      total: Number(item.quantity) * Number(item.unitPrice)
-    }));
-
-    updateInvoiceData({
-      details: {
-        ...invoiceData.details,
-        items: itemsWithTotals,
-        discountDetails: {
-          amount: Number(data.details.discountDetails.amount) || 0,
-          amountType: data.details.discountDetails.amountType
-        },
-        taxDetails: {
-          amount: Number(data.details.taxDetails.amount) || 0,
-          amountType: data.details.taxDetails.amountType
-        },
-        shippingDetails: {
-          cost: Number(data.details.shippingDetails.cost) || 0,
-          costType: data.details.shippingDetails.costType
-        }
-      }
-    });
-  };
 
   // Calculate subtotal
   const calculateSubtotal = () => {
-    if (!watchedItems) return 0;
-    return watchedItems.reduce((sum, item) => {
+    if (!invoiceData.details.items) return 0;
+    return invoiceData.details.items.reduce((sum, item) => {
       return sum + (Number(item.quantity || 0) * Number(item.unitPrice || 0));
     }, 0);
   };
@@ -103,18 +37,16 @@ const LineItemsStep = () => {
             </div>
 
             <div className="space-y-4">
-              {fields.map((field, index) => (
-                <div key={field.id} className="p-4 border border-dark-border rounded-lg">
+              {invoiceData.details.items.map((item, index) => (
+                <div key={index} className="p-4 border border-dark-border rounded-lg">
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
                     <div className="md:col-span-4">
                       <label className="form-label">Item Name *</label>
                       <input
-                        {...register(`details.items.${index}.name`, { 
-                          required: 'Item name is required' 
-                        })}
                         type="text"
                         className="form-input w-full"
                         placeholder="Product or service name"
+                        value={invoiceData.details.items[index]?.name || ''}
                         onChange={(e) => {
                           const newItems = [...invoiceData.details.items];
                           newItems[index] = { ...newItems[index], name: e.target.value };
@@ -123,20 +55,15 @@ const LineItemsStep = () => {
                           });
                         }}
                       />
-                      {errors.details?.items?.[index]?.name && (
-                        <p className="mt-1 text-sm text-state-danger">
-                          {errors.details.items[index].name.message}
-                        </p>
-                      )}
                     </div>
 
                     <div className="md:col-span-3">
                       <label className="form-label">Description</label>
                       <textarea
-                        {...register(`details.items.${index}.description`)}
                         className="form-input w-full resize-none"
                         rows="2"
                         placeholder="Brief description"
+                        value={invoiceData.details.items[index]?.description || ''}
                         onChange={(e) => {
                           const newItems = [...invoiceData.details.items];
                           newItems[index] = { ...newItems[index], description: e.target.value };
@@ -150,66 +77,50 @@ const LineItemsStep = () => {
                     <div className="md:col-span-1">
                       <label className="form-label">Qty *</label>
                       <input
-                        {...register(`details.items.${index}.quantity`, { 
-                          required: 'Quantity is required',
-                          min: { value: 1, message: 'Minimum quantity is 1' }
-                        })}
                         type="number"
                         min="1"
                         className="form-input w-full"
                         placeholder="1"
+                        value={invoiceData.details.items[index]?.quantity || ''}
                         onChange={(e) => {
                           const newItems = [...invoiceData.details.items];
-                          newItems[index] = { ...newItems[index], quantity: Number(e.target.value) };
+                          newItems[index] = { ...newItems[index], quantity: Number(e.target.value) || 0 };
                           updateInvoiceData({
                             details: { ...invoiceData.details, items: newItems }
                           });
                         }}
                       />
-                      {errors.details?.items?.[index]?.quantity && (
-                        <p className="mt-1 text-sm text-state-danger">
-                          {errors.details.items[index].quantity.message}
-                        </p>
-                      )}
                     </div>
 
                     <div className="md:col-span-2">
                       <label className="form-label">Rate *</label>
                       <input
-                        {...register(`details.items.${index}.unitPrice`, { 
-                          required: 'Rate is required',
-                          min: { value: 0, message: 'Rate must be positive' }
-                        })}
                         type="number"
                         step="0.01"
                         min="0"
                         className="form-input w-full"
                         placeholder="0.00"
+                        value={invoiceData.details.items[index]?.unitPrice || ''}
                         onChange={(e) => {
                           const newItems = [...invoiceData.details.items];
-                          newItems[index] = { ...newItems[index], unitPrice: Number(e.target.value) };
+                          newItems[index] = { ...newItems[index], unitPrice: Number(e.target.value) || 0 };
                           updateInvoiceData({
                             details: { ...invoiceData.details, items: newItems }
                           });
                         }}
                       />
-                      {errors.details?.items?.[index]?.unitPrice && (
-                        <p className="mt-1 text-sm text-state-danger">
-                          {errors.details.items[index].unitPrice.message}
-                        </p>
-                      )}
                     </div>
 
                     <div className="md:col-span-1">
                       <label className="form-label">Total</label>
                       <div className="form-input bg-dark-bg-primary text-light-text-secondary">
-                        {((Number(watchedItems?.[index]?.quantity) || 0) * 
-                          (Number(watchedItems?.[index]?.unitPrice) || 0)).toFixed(2)}
+                        {((Number(invoiceData.details.items[index]?.quantity) || 0) * 
+                          (Number(invoiceData.details.items[index]?.unitPrice) || 0)).toFixed(2)}
                       </div>
                     </div>
 
                     <div className="md:col-span-1 flex items-end">
-                      {fields.length > 1 && (
+                      {invoiceData.details.items.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeItem(index)}
@@ -247,12 +158,12 @@ const LineItemsStep = () => {
                 <div className="space-y-2">
                   <div className="flex space-x-2">
                     <input
-                      {...register('details.discountDetails.amount')}
                       type="number"
                       step="0.01"
                       min="0"
                       className="form-input flex-1"
                       placeholder="0.00"
+                      value={invoiceData.details.discountDetails?.amount || ''}
                       onChange={(e) => {
                         updateInvoiceData({
                           details: {
@@ -266,8 +177,8 @@ const LineItemsStep = () => {
                       }}
                     />
                     <select
-                      {...register('details.discountDetails.amountType')}
                       className="form-input w-24"
+                      value={invoiceData.details.discountDetails?.amountType || 'amount'}
                       onChange={(e) => {
                         updateInvoiceData({
                           details: {
@@ -293,12 +204,12 @@ const LineItemsStep = () => {
                 <div className="space-y-2">
                   <div className="flex space-x-2">
                     <input
-                      {...register('details.taxDetails.amount')}
                       type="number"
                       step="0.01"
                       min="0"
                       className="form-input flex-1"
                       placeholder="0.00"
+                      value={invoiceData.details.taxDetails?.amount || ''}
                       onChange={(e) => {
                         updateInvoiceData({
                           details: {
@@ -312,8 +223,8 @@ const LineItemsStep = () => {
                       }}
                     />
                     <select
-                      {...register('details.taxDetails.amountType')}
                       className="form-input w-24"
+                      value={invoiceData.details.taxDetails?.amountType || 'percentage'}
                       onChange={(e) => {
                         updateInvoiceData({
                           details: {
@@ -339,12 +250,12 @@ const LineItemsStep = () => {
                 <div className="space-y-2">
                   <div className="flex space-x-2">
                     <input
-                      {...register('details.shippingDetails.cost')}
                       type="number"
                       step="0.01"
                       min="0"
                       className="form-input flex-1"
                       placeholder="0.00"
+                      value={invoiceData.details.shippingDetails?.cost || ''}
                       onChange={(e) => {
                         updateInvoiceData({
                           details: {
@@ -358,8 +269,8 @@ const LineItemsStep = () => {
                       }}
                     />
                     <select
-                      {...register('details.shippingDetails.costType')}
                       className="form-input w-24"
+                      value={invoiceData.details.shippingDetails?.costType || 'amount'}
                       onChange={(e) => {
                         updateInvoiceData({
                           details: {
