@@ -12,10 +12,26 @@ export const useInvoice = () => {
   return context;
 };
 
-export const InvoiceProvider = ({ children }) => {
-  const [invoiceData, setInvoiceData] = useState({
-    ...DEFAULT_INVOICE_DATA,
-    invoiceNumber: generateInvoiceNumber()
+export const InvoiceProvider = ({ children, initialData, isEditMode = false }) => {
+  const [invoiceData, setInvoiceData] = useState(() => {
+    if (isEditMode && initialData) {
+      console.log('Loading invoice data for edit mode:', initialData);
+      // For edit mode, use the fetched invoice data
+      const mergedData = {
+        ...initialData,
+        // Ensure we have all required fields with defaults
+        sender: { ...DEFAULT_INVOICE_DATA.sender, ...initialData.sender },
+        receiver: { ...DEFAULT_INVOICE_DATA.receiver, ...initialData.receiver },
+        details: { ...DEFAULT_INVOICE_DATA.details, ...initialData.details }
+      };
+      console.log('Merged invoice data:', mergedData);
+      return mergedData;
+    }
+    // For create mode, use default data
+    return {
+      ...DEFAULT_INVOICE_DATA,
+      invoiceNumber: generateInvoiceNumber()
+    };
   });
   const [currentStep, setCurrentStep] = useState(0);
 

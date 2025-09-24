@@ -9,7 +9,7 @@ import LineItemsStep from '../components/FormSteps/LineItemsStep';
 import PaymentInfoStep from '../components/FormSteps/PaymentInfoStep';
 import SummaryStep from '../components/FormSteps/SummaryStep';
 
-const CreateInvoicePage = () => {
+const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
   const { currentStep, setCurrentStep } = useInvoice();
 
   const steps = [
@@ -31,7 +31,7 @@ const CreateInvoicePage = () => {
       case 3:
         return <PaymentInfoStep />;
       case 4:
-        return <SummaryStep />;
+        return <SummaryStep isEditMode={isEditMode} invoiceId={invoiceId} />;
       default:
         return <FromToStep />;
     }
@@ -42,8 +42,12 @@ const CreateInvoicePage = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-light-text-primary">Create Invoice</h1>
-          <p className="text-light-text-secondary mt-1">Follow the steps to create your invoice</p>
+          <h1 className="text-3xl font-bold text-light-text-primary">
+            {isEditMode ? 'Edit Invoice' : 'Create Invoice'}
+          </h1>
+          <p className="text-light-text-secondary mt-1">
+            {isEditMode ? 'Update your invoice details' : 'Follow the steps to create your invoice'}
+          </p>
         </div>
 
         {/* Step Indicator */}

@@ -7,7 +7,7 @@ import { formatNumberWithCommas } from '../../lib/helpers';
 import InvoicePreviewModal from '../InvoicePreviewModal';
 import { generatePDF } from '../../lib/pdfGenerator';
 
-const SummaryStep = () => {
+const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
   const { invoiceData, resetInvoiceData } = useInvoice();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
@@ -41,14 +41,24 @@ const SummaryStep = () => {
     setError('');
     
     try {
-      const response = await api.post('/invoices', invoiceData);
+      let response;
+      if (isEditMode && invoiceId) {
+        // Update existing invoice
+        response = await api.put(`/invoices/${invoiceId}`, invoiceData);
+      } else {
+        // Create new invoice
+        response = await api.post('/invoices', invoiceData);
+      }
+      
       setSaved(true);
       setTimeout(() => {
-        resetInvoiceData();
+        if (!isEditMode) {
+          resetInvoiceData();
+        }
         window.location.href = '/';
       }, 2000);
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to save invoice');
+      setError(error.response?.data?.error || `Failed to ${isEditMode ? 'update' : 'save'} invoice`);
     } finally {
       setSaving(false);
     }
@@ -69,13 +79,15 @@ const SummaryStep = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h3 className="text-xl font-semibold text-light-text-primary mb-6">Review & Save Invoice</h3>
+        <h3 className="text-xl font-semibold text-light-text-primary mb-6">
+          Review & {isEditMode ? 'Update' : 'Save'} Invoice
+        </h3>
         
         {/* Success Message */}
         {saved && (
           <div className="bg-state-success bg-opacity-10 border border-state-success text-state-success px-4 py-3 rounded-lg mb-6 flex items-center">
             <FiCheck className="mr-2" />
-            Invoice saved successfully! Redirecting to dashboard...
+            Invoice {isEditMode ? 'updated' : 'saved'} successfully! Redirecting to dashboard...
           </div>
         )}
 
@@ -257,7 +269,7 @@ const SummaryStep = () => {
               ) : (
                 <>
                   <FiSave className="h-4 w-4" />
-                  <span>Save Invoice</span>
+                  <span>{isEditMode ? 'Update Invoice' : 'Save Invoice'}</span>
                 </>
               )}
             </button>
