@@ -66,7 +66,7 @@ export const DEFAULT_INVOICE_DATA = {
   details: {
     invoiceDate: new Date(),
     dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-    currency: 'USD',
+    currency: 'INR',
     items: [
       {
         name: '',
@@ -79,15 +79,18 @@ export const DEFAULT_INVOICE_DATA = {
     subTotal: 0,
     discountDetails: {
       amount: 0,
-      amountType: 'amount'
+      amountType: 'amount',
+      enabled: false
     },
     taxDetails: {
       amount: 0,
-      amountType: 'percentage'
+      amountType: 'percentage',
+      enabled: false
     },
     shippingDetails: {
       cost: 0,
-      costType: 'amount'
+      costType: 'amount',
+      enabled: false
     },
     totalAmount: 0,
     totalAmountInWords: '',
@@ -100,7 +103,8 @@ export const DEFAULT_INVOICE_DATA = {
     },
     signature: {
       data: '',
-      fontFamily: 'Great Vibes'
+      fontFamily: 'Great Vibes',
+      type: 'text'
     },
     invoiceLogo: ''
   },

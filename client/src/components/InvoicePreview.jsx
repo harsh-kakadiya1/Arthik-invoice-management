@@ -25,7 +25,7 @@ const InvoicePreview = () => {
 
   return (
     <div className="w-full">
-      <div className="transform scale-50 origin-top-left w-[200%] h-[200%] overflow-hidden">
+      <div className="transform scale-50 origin-top-left w-[200%] h-[200%] overflow-hidden invoice-preview-content">
         {renderTemplate()}
       </div>
     </div>

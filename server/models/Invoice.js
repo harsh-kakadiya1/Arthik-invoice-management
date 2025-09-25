@@ -86,6 +86,10 @@ const InvoiceSchema = new mongoose.Schema({
         type: String,
         enum: ['amount', 'percentage'],
         default: 'amount'
+      },
+      enabled: {
+        type: Boolean,
+        default: false
       }
     },
     taxDetails: {
@@ -97,6 +101,10 @@ const InvoiceSchema = new mongoose.Schema({
         type: String,
         enum: ['amount', 'percentage'],
         default: 'percentage'
+      },
+      enabled: {
+        type: Boolean,
+        default: false
       }
     },
     shippingDetails: {
@@ -108,6 +116,10 @@ const InvoiceSchema = new mongoose.Schema({
         type: String,
         enum: ['amount', 'percentage'],
         default: 'amount'
+      },
+      enabled: {
+        type: Boolean,
+        default: false
       }
     },
     totalAmount: {
@@ -124,7 +136,12 @@ const InvoiceSchema = new mongoose.Schema({
     },
     signature: {
       data: String,
-      fontFamily: String
+      fontFamily: String,
+      type: {
+        type: String,
+        enum: ['text', 'image'],
+        default: 'text'
+      }
     },
     invoiceLogo: String
   },

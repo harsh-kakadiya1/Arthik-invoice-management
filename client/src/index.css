@@ -125,6 +125,10 @@ select.form-input:focus {
   @apply bg-transparent border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-teal;
 }
 
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-dark-bg-primary;
+}
+
 .card {
   @apply bg-dark-bg-secondary border border-dark-border rounded-lg p-6 shadow-lg;
 }
@@ -132,4 +136,182 @@ select.form-input:focus {
 /* Loading spinner */
 .spinner {
   @apply animate-spin rounded-full h-6 w-6 border-b-2 border-brand-teal;
+}
+
+/* Toggle Switch Styles */
+.toggle-switch {
+  position: relative;
+  appearance: none;
+  width: 44px;
+  height: 24px;
+  background-color: var(--dark-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  outline: none;
+}
+
+.toggle-switch:checked {
+  background-color: var(--brand-teal);
+}
+
+.toggle-switch::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+}
+
+.toggle-switch:checked::before {
+  transform: translateX(20px);
+}
+
+/* Radio Button Styles */
+.form-radio {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--dark-border);
+  border-radius: 50%;
+  background-color: var(--dark-bg-secondary);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.form-radio:checked {
+  border-color: var(--brand-teal);
+  background-color: var(--brand-teal);
+}
+
+.form-radio:checked::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  background-color: white;
+  border-radius: 50%;
+}
+
+/* Enhanced Form Inputs */
+.form-input:focus {
+  border-color: var(--brand-teal);
+  box-shadow: 0 0 0 3px rgba(27, 154, 170, 0.1);
+  outline: none;
+}
+
+/* Signature Font */
+.font-signature {
+  font-family: 'Great Vibes', cursive;
+}
+
+/* Enhanced Item Controls */
+.item-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.move-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.move-btn {
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+  font-size: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--dark-border);
+  color: var(--light-text-secondary);
+}
+
+.move-btn:hover:not(:disabled) {
+  background-color: var(--dark-bg-secondary);
+  border-color: var(--brand-teal);
+  color: var(--light-text-primary);
+}
+
+.move-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Amount in Words Display */
+.amount-in-words {
+  background: linear-gradient(135deg, rgba(27, 154, 170, 0.1) 0%, rgba(27, 154, 170, 0.2) 100%);
+  border: 2px solid var(--brand-teal);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.amount-in-words-label {
+  color: var(--brand-teal);
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.amount-in-words-text {
+  color: var(--light-text-primary);
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: capitalize;
+  font-style: italic;
+}
+
+/* Action Buttons */
+.action-btn {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.action-btn-primary {
+  background-color: var(--brand-teal);
+  color: white;
+}
+
+.action-btn-primary:hover {
+  background-color: rgba(27, 154, 170, 0.9);
+}
+
+.action-btn-danger {
+  background-color: var(--state-danger);
+  color: white;
+}
+
+.action-btn-danger:hover {
+  background-color: rgba(220, 53, 69, 0.9);
+}
+
+.action-btn-secondary {
+  background-color: var(--dark-border);
+  color: var(--light-text-primary);
+}
+
+.action-btn-secondary:hover {
+  background-color: var(--dark-bg-secondary);
 }

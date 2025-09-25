@@ -62,7 +62,7 @@ const InvoicePreviewModal = ({ isOpen, onClose, onDownloadPDF }) => {
 
         {/* Preview Content */}
         <div className="flex-1 overflow-auto p-4 bg-gray-100">
-          <div className="bg-white shadow-lg mx-auto" style={{ width: '210mm', minHeight: '297mm' }}>
+          <div className="bg-white shadow-lg mx-auto invoice-preview-content" style={{ width: '210mm', minHeight: '297mm' }}>
             {renderTemplate()}
           </div>
         </div>
