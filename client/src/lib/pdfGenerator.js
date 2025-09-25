@@ -7,7 +7,7 @@ export const generatePDF = async (invoiceData) => {
     const token = localStorage.getItem('token');
     
     // Send invoice data to server for PDF generation
-    const response = await fetch('http://localhost:5001/api/v1/pdf/generate-pdf', {
+    const response = await fetch('http://localhost:5000/api/v1/pdf/generate-pdf', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useInvoice } from '../../context/InvoiceContext';
 import { FiPlus, FiTrash2, FiPackage, FiMove, FiChevronUp, FiChevronDown } from 'react-icons/fi';
-import { numberToWords } from '../../lib/helpers';
 
 const LineItemsStep = () => {
   const { invoiceData, updateInvoiceData, addItem, removeItem, moveItem, duplicateItem, updateItem } = useInvoice();
@@ -86,21 +85,23 @@ const LineItemsStep = () => {
 
             <div className="space-y-4">
               {invoiceData.details.items.map((item, index) => (
-                <div key={index} className="p-4 border border-dark-border rounded-lg bg-dark-bg-primary hover:bg-opacity-80 transition-colors group">
-                  {/* Item Header with Controls */}
+                <div key={index} className="p-6 border border-dark-border rounded-lg bg-dark-bg-primary">
+                  {/* Item Header */}
                   <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center space-x-2">
                       <FiPackage className="text-light-text-secondary" />
                       <span className="text-sm font-medium text-light-text-primary">
-                        Item #{index + 1} {item.name && `- ${item.name}`}
+                        Item #{index + 1}
                       </span>
                     </div>
-                    <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    
+                    {/* Move Controls */}
+                    <div className="flex items-center space-x-1">
                       <button
                         type="button"
                         onClick={() => moveItemUp(index)}
                         disabled={index === 0}
-                        className="p-1 text-light-text-secondary hover:text-brand-teal disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2 text-light-text-secondary hover:text-brand-teal disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
                         title="Move up"
                       >
                         <FiChevronUp className="h-4 w-4" />
@@ -109,18 +110,35 @@ const LineItemsStep = () => {
                         type="button"
                         onClick={() => moveItemDown(index)}
                         disabled={index === invoiceData.details.items.length - 1}
-                        className="p-1 text-light-text-secondary hover:text-brand-teal disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2 text-light-text-secondary hover:text-brand-teal disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
                         title="Move down"
                       >
                         <FiChevronDown className="h-4 w-4" />
                       </button>
-                      <div className="w-px h-4 bg-dark-border mx-1"></div>
-                      <FiMove className="h-4 w-4 text-light-text-secondary cursor-grab" title="Drag to reorder" />
+                      <button
+                        type="button"
+                        onClick={() => duplicateItem(index)}
+                        className="p-2 text-blue-500 hover:bg-blue-500 hover:bg-opacity-10 rounded transition-colors ml-2"
+                        title="Copy item"
+                      >
+                        Copy
+                      </button>
+                      {invoiceData.details.items.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeItem(index)}
+                          className="p-2 text-state-danger hover:bg-state-danger hover:bg-opacity-10 rounded transition-colors"
+                          title="Delete item"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                    <div className="md:col-span-4">
+                  {/* First Row: Item Name and Description */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
                       <label className="form-label">Item Name *</label>
                       <input
                         type="text"
@@ -137,30 +155,33 @@ const LineItemsStep = () => {
                       />
                     </div>
 
-                    <div className="md:col-span-3">
+                    <div>
                       <label className="form-label">Description</label>
-                      <textarea
-                        className="form-input w-full resize-none"
-                        rows="2"
+                      <input
+                        type="text"
+                        className="form-input w-full"
                         placeholder="Brief description"
                         value={invoiceData.details.items[index]?.description || ''}
                         onChange={(e) => updateItem(index, 'description', e.target.value)}
                       />
                     </div>
+                  </div>
 
-                    <div className="md:col-span-1">
+                  {/* Second Row: Qty, Rate, and Total */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
                       <label className="form-label">Qty *</label>
                       <input
                         type="number"
                         min="1"
-                        className="form-input w-full text-center"
+                        className="form-input w-full"
                         placeholder="1"
                         value={invoiceData.details.items[index]?.quantity || ''}
                         onChange={(e) => updateItem(index, 'quantity', Number(e.target.value) || 0)}
                       />
                     </div>
 
-                    <div className="md:col-span-2">
+                    <div>
                       <label className="form-label">Rate *</label>
                       <input
                         type="number"
@@ -173,55 +194,18 @@ const LineItemsStep = () => {
                       />
                     </div>
 
-                    <div className="md:col-span-1">
+                    <div>
                       <label className="form-label">Total</label>
-                      <div className="form-input bg-dark-bg-primary text-light-text-secondary">
-                        {((Number(invoiceData.details.items[index]?.quantity) || 0) * 
+                      <div className="form-input bg-dark-bg-secondary text-light-text-primary font-medium">
+                        ₹{((Number(invoiceData.details.items[index]?.quantity) || 0) * 
                           (Number(invoiceData.details.items[index]?.unitPrice) || 0)).toFixed(2)}
                       </div>
                     </div>
 
-                    <div className="md:col-span-1 flex items-end space-x-2">
-                      <div className="flex flex-col space-y-1">
-                        <button
-                          type="button"
-                          onClick={() => moveItem(index, Math.max(0, index - 1))}
-                          disabled={index === 0}
-                          className="p-1 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 rounded"
-                          title="Move up"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveItem(index, Math.min(invoiceData.details.items.length - 1, index + 1))}
-                          disabled={index === invoiceData.details.items.length - 1}
-                          className="p-1 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30 rounded"
-                          title="Move down"
-                        >
-                          ↓
-                        </button>
+                    <div className="flex items-end">
+                      <div className="text-sm text-light-text-secondary">
+                        Item {index + 1} of {invoiceData.details.items.length}
                       </div>
-                      
-                      <button
-                        type="button"
-                        onClick={() => duplicateItem(index)}
-                        className="p-2 text-blue-500 hover:bg-blue-500 hover:bg-opacity-10 rounded-lg transition-colors"
-                        title="Duplicate item"
-                      >
-                        Copy
-                      </button>
-                      
-                      {invoiceData.details.items.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeItem(index)}
-                          className="p-2 text-state-danger hover:bg-state-danger hover:bg-opacity-10 rounded-lg transition-colors"
-                          title="Remove item"
-                        >
-                          Delete
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -303,25 +287,24 @@ const LineItemsStep = () => {
                 <div className="flex justify-between items-center p-3 border border-dark-border rounded-lg">
                   <span className="text-light-text-primary font-medium">Discount</span>
                   <div className="flex items-center space-x-3">
-                    <button
-                      type="button"
-                      className="p-2 text-light-text-secondary hover:text-light-text-primary transition-colors"
-                      onClick={() => {
-                        const newType = invoiceData.details.discountDetails?.amountType === 'amount' ? 'percentage' : 'amount';
+                    <select
+                      className="form-input w-20 text-center"
+                      value={invoiceData.details.discountDetails?.amountType || 'amount'}
+                      onChange={(e) => {
                         updateInvoiceData({
                           details: {
                             ...invoiceData.details,
                             discountDetails: {
                               ...invoiceData.details.discountDetails,
-                              amountType: newType
+                              amountType: e.target.value
                             }
                           }
                         });
                       }}
-                      title="Switch between fixed amount and percentage"
                     >
-                      🔄
-                    </button>
+                      <option value="amount">INR</option>
+                      <option value="percentage">%</option>
+                    </select>
                     <input
                       type="number"
                       step="0.01"
@@ -341,9 +324,6 @@ const LineItemsStep = () => {
                         });
                       }}
                     />
-                    <span className="text-light-text-secondary min-w-[40px]">
-                      {invoiceData.details.discountDetails?.amountType === 'percentage' ? '%' : invoiceData.details.currency}
-                    </span>
                   </div>
                 </div>
               )}
@@ -353,25 +333,24 @@ const LineItemsStep = () => {
                 <div className="flex justify-between items-center p-3 border border-dark-border rounded-lg">
                   <span className="text-light-text-primary font-medium">Tax</span>
                   <div className="flex items-center space-x-3">
-                    <button
-                      type="button"
-                      className="p-2 text-light-text-secondary hover:text-light-text-primary transition-colors"
-                      onClick={() => {
-                        const newType = invoiceData.details.taxDetails?.amountType === 'amount' ? 'percentage' : 'amount';
+                    <select
+                      className="form-input w-20 text-center"
+                      value={invoiceData.details.taxDetails?.amountType || 'percentage'}
+                      onChange={(e) => {
                         updateInvoiceData({
                           details: {
                             ...invoiceData.details,
                             taxDetails: {
                               ...invoiceData.details.taxDetails,
-                              amountType: newType
+                              amountType: e.target.value
                             }
                           }
                         });
                       }}
-                      title="Switch between fixed amount and percentage"
                     >
-                      🔄
-                    </button>
+                      <option value="amount">INR</option>
+                      <option value="percentage">%</option>
+                    </select>
                     <input
                       type="number"
                       step="0.01"
@@ -391,9 +370,6 @@ const LineItemsStep = () => {
                         });
                       }}
                     />
-                    <span className="text-light-text-secondary min-w-[40px]">
-                      {invoiceData.details.taxDetails?.amountType === 'percentage' ? '%' : invoiceData.details.currency}
-                    </span>
                   </div>
                 </div>
               )}
@@ -403,25 +379,24 @@ const LineItemsStep = () => {
                 <div className="flex justify-between items-center p-3 border border-dark-border rounded-lg">
                   <span className="text-light-text-primary font-medium">Shipping</span>
                   <div className="flex items-center space-x-3">
-                    <button
-                      type="button"
-                      className="p-2 text-light-text-secondary hover:text-light-text-primary transition-colors"
-                      onClick={() => {
-                        const newType = invoiceData.details.shippingDetails?.costType === 'amount' ? 'percentage' : 'amount';
+                    <select
+                      className="form-input w-20 text-center"
+                      value={invoiceData.details.shippingDetails?.costType || 'amount'}
+                      onChange={(e) => {
                         updateInvoiceData({
                           details: {
                             ...invoiceData.details,
                             shippingDetails: {
                               ...invoiceData.details.shippingDetails,
-                              costType: newType
+                              costType: e.target.value
                             }
                           }
                         });
                       }}
-                      title="Switch between fixed amount and percentage"
                     >
-                      🔄
-                    </button>
+                      <option value="amount">INR</option>
+                      <option value="percentage">%</option>
+                    </select>
                     <input
                       type="number"
                       step="0.01"
@@ -441,9 +416,6 @@ const LineItemsStep = () => {
                         });
                       }}
                     />
-                    <span className="text-light-text-secondary min-w-[40px]">
-                      {invoiceData.details.shippingDetails?.costType === 'percentage' ? '%' : invoiceData.details.currency}
-                    </span>
                   </div>
                 </div>
               )}
@@ -451,7 +423,7 @@ const LineItemsStep = () => {
           </div>
           
           {/* Total Summary */}
-          <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6 mt-6">
+          <div className="bg-black-50 border-2 border-gray-200 rounded-lg p-6 mt-6">
             <div className="flex justify-between items-center mb-3">
               <span className="text-lg font-semibold">Subtotal:</span>
               <span className="text-lg font-bold">₹{subtotal.toFixed(2)}</span>
@@ -491,17 +463,9 @@ const LineItemsStep = () => {
 
             <hr className="my-4 border-gray-300" />
             
-            <div className="flex justify-between items-center mb-3">
+            <div className="flex justify-between items-center">
               <span className="text-xl font-bold">Total Amount:</span>
               <span className="text-xl font-bold text-blue-600">₹{total.toFixed(2)}</span>
-            </div>
-            
-            {/* Amount in Words */}
-            <div className="amount-in-words">
-              <span className="amount-in-words-label">Amount in Words:</span>
-              <p className="amount-in-words-text">
-                {numberToWords(Math.floor(total))} Rupees Only
-              </p>
             </div>
           </div>
         </div>

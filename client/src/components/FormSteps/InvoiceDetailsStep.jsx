@@ -130,70 +130,134 @@ const InvoiceDetailsStep = () => {
             </div>
           </div>
 
-          {/* Company Logo Upload */}
+          {/* Company Logo Upload with Drag & Drop */}
           <div className="card">
             <h4 className="text-lg font-medium text-light-text-primary mb-4">Company Logo</h4>
             <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                {invoiceData.details.invoiceLogo && (
-                  <div className="flex-shrink-0">
+              {invoiceData.details.invoiceLogo ? (
+                <div className="flex items-center justify-between p-4 border border-dark-border rounded-lg bg-dark-bg-secondary">
+                  <div className="flex items-center space-x-4">
                     <img
                       src={invoiceData.details.invoiceLogo}
                       alt="Company Logo"
                       className="h-16 w-16 object-contain border border-dark-border rounded-lg"
                     />
+                    <div>
+                      <p className="text-light-text-primary font-medium">Logo uploaded successfully</p>
+                      <p className="text-sm text-light-text-secondary">Click to change or remove</p>
+                    </div>
                   </div>
-                )}
-                <div className="flex-1">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    id="logo-upload"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                          updateInvoiceData({
-                            details: {
-                              ...invoiceData.details,
-                              invoiceLogo: event.target.result
-                            }
-                          });
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <label
-                    htmlFor="logo-upload"
-                    className="btn-secondary cursor-pointer inline-flex items-center"
-                  >
-                    Upload Logo
-                  </label>
-                  <p className="text-sm text-light-text-secondary mt-1">
-                    Upload your company logo (PNG, JPG, or SVG)
-                  </p>
+                  <div className="flex space-x-2">
+                    <label
+                      htmlFor="logo-upload"
+                      className="btn-secondary cursor-pointer"
+                    >
+                      Change
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateInvoiceData({
+                          details: {
+                            ...invoiceData.details,
+                            invoiceLogo: ''
+                          }
+                        });
+                      }}
+                      className="btn-danger"
+                      title="Remove logo"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
-                {invoiceData.details.invoiceLogo && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      updateInvoiceData({
-                        details: {
-                          ...invoiceData.details,
-                          invoiceLogo: ''
+              ) : (
+                <div
+                  className="border-2 border-dashed border-dark-border rounded-lg p-12 text-center hover:border-brand-teal transition-all duration-300 cursor-pointer group"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.add('border-brand-teal', 'bg-brand-teal', 'bg-opacity-5');
+                  }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.remove('border-brand-teal', 'bg-brand-teal', 'bg-opacity-5');
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.remove('border-brand-teal', 'bg-brand-teal', 'bg-opacity-5');
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                      const file = files[0];
+                      if (file.type.startsWith('image/')) {
+                        if (file.size <= 10 * 1024 * 1024) { // 10MB limit
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            updateInvoiceData({
+                              details: {
+                                ...invoiceData.details,
+                                invoiceLogo: event.target.result
+                              }
+                            });
+                          };
+                          reader.readAsDataURL(file);
+                        } else {
+                          alert('File size must be less than 10MB');
                         }
-                      });
-                    }}
-                    className="text-state-danger hover:text-red-600 transition-colors p-2"
-                    title="Remove logo"
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
+                      } else {
+                        alert('Please upload an image file (PNG, JPG, or SVG)');
+                      }
+                    }
+                  }}
+                  onClick={() => document.getElementById('logo-upload').click()}
+                >
+                  <div className="space-y-4">
+                    <div className="mx-auto w-16 h-16 bg-dark-bg-secondary rounded-full flex items-center justify-center group-hover:bg-brand-teal group-hover:bg-opacity-10 transition-colors">
+                      <svg className="w-8 h-8 text-light-text-secondary group-hover:text-brand-teal transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-lg font-medium text-light-text-primary mb-2">Upload Logo Here</p>
+                      <p className="text-sm text-light-text-secondary mb-1">Click to upload image</p>
+                      <p className="text-xs text-light-text-secondary">PNG, JPG up to 10MB</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                id="logo-upload"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    if (file.size <= 10 * 1024 * 1024) { // 10MB limit
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        updateInvoiceData({
+                          details: {
+                            ...invoiceData.details,
+                            invoiceLogo: event.target.result
+                          }
+                        });
+                      };
+                      reader.readAsDataURL(file);
+                    } else {
+                      alert('File size must be less than 10MB');
+                    }
+                  }
+                }}
+              />
             </div>
           </div>
 
