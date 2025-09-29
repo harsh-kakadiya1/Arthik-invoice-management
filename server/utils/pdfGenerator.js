@@ -29,13 +29,16 @@ const generatePDFFromHTML = async (htmlContent, options = {}) => {
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
-      preferCSSPageSize: true,
+      preferCSSPageSize: false,
+      width: '210mm',
+      height: '297mm',
       margin: {
-        top: '0.5in',
-        bottom: '0.5in',
-        left: '0.5in',
-        right: '0.5in',
+        top: '0.2in',
+        bottom: '0.2in',
+        left: '0.2in',
+        right: '0.2in',
       },
+      displayHeaderFooter: false,
       ...options
     });
 
@@ -94,23 +97,25 @@ const generateCompleteHTML = (templateHTML, invoiceData) => {
     
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 14px;
-      line-height: 1.5;
+      font-size: 12px;
+      line-height: 1.4;
       color: #1f2937;
       background: white;
       width: 210mm;
-      min-height: 297mm;
-      margin: 0 auto;
-      padding: 20px;
+      height: 297mm;
+      margin: 0;
+      padding: 10px;
+      overflow: hidden;
     }
     
     /* Print Styles */
     @media print {
       body {
         width: 210mm;
-        min-height: 297mm;
+        height: 297mm;
         margin: 0;
-        padding: 20px;
+        padding: 10px;
+        overflow: hidden;
       }
       
       * {
@@ -172,31 +177,34 @@ function getTemplateCSS() {
     .template4-container {
       display: flex;
       flex-direction: row;
-      min-height: 800px;
+      height: 275mm;
       border: 1px solid #e5e7eb;
       border-radius: 0.5rem;
       overflow: hidden;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      page-break-inside: avoid;
     }
     
     .template4-sidebar {
       width: 33.333333%;
       background-color: #111827;
       color: #ffffff;
-      padding: 1.5rem;
+      padding: 1rem;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      overflow: hidden;
     }
     
     .template4-content {
       width: 66.666667%;
-      padding: 1.5rem;
+      padding: 1rem;
       background-color: #ffffff;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      overflow: hidden;
     }
     
     .template4-sidebar .logo-img {
@@ -342,33 +350,7 @@ function getTemplateCSS() {
     .border-blue-200 { border-color: #dbeafe; }
     .rounded-lg { border-radius: 0.5rem; }
     
-    /* Template 4 Specific Styles */
-    .template4-container {
-      display: flex;
-      flex-direction: row;
-      min-height: 800px;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
-      overflow: hidden;
-    }
-    
-    .template4-sidebar {
-      width: 33.333333%;
-      background-color: #111827;
-      color: #ffffff;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    
-    .template4-content {
-      width: 66.666667%;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
+    /* Template 4 Specific Styles - Duplicate removed */
     
     /* Grid system */
     .grid { display: grid; }
@@ -565,6 +547,52 @@ function getTemplateCSS() {
       font-size: 0.75rem;
       text-align: right;
       margin-top: 0.5rem;
+    }
+    
+    /* Ensure single page layout */
+    * {
+      page-break-inside: avoid;
+    }
+    
+    .template4-container {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    .items-table-container {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    .totals-container {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    /* Reduce font sizes for better fit */
+    .template4-sidebar .sender-name {
+      font-size: 1.25rem;
+    }
+    
+    .template4-content .invoice-title h2 {
+      font-size: 1.875rem;
+    }
+    
+    .template4-sidebar .invoice-details-title {
+      font-size: 1rem;
+    }
+    
+    /* Compact spacing */
+    .template4-sidebar .invoice-details-section {
+      margin-top: 1rem;
+    }
+    
+    .template4-content .bill-to-section {
+      margin-bottom: 1rem;
+    }
+    
+    .template4-content .invoice-title {
+      margin-bottom: 1rem;
     }
   `;
 }

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import { FiEye, FiEyeOff, FiMail, FiLock, FiUser } from 'react-icons/fi';
+import ThemeToggle from '../components/ThemeToggle';
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -38,7 +39,12 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg-primary flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-bg-primary flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+      {/* Theme Toggle - Top Right */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <img 
@@ -46,10 +52,10 @@ const RegisterPage = () => {
             alt="Arthik Logo" 
             className="mx-auto h-16 w-auto"
           />
-          <h2 className="mt-6 text-3xl font-bold text-light-text-primary">
+          <h2 className="mt-6 text-3xl font-bold text-text-primary transition-colors duration-300">
             Create your account
           </h2>
-          <p className="mt-2 text-sm text-light-text-secondary">
+          <p className="mt-2 text-sm text-text-secondary transition-colors duration-300">
             Start managing your invoices today
           </p>
         </div>
@@ -68,7 +74,7 @@ const RegisterPage = () => {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiUser className="h-5 w-5 text-light-text-secondary" />
+                  <FiUser className="h-5 w-5 text-text-secondary" />
                 </div>
                 <input
                   {...register('name', {
@@ -94,7 +100,7 @@ const RegisterPage = () => {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiMail className="h-5 w-5 text-light-text-secondary" />
+                  <FiMail className="h-5 w-5 text-text-secondary" />
                 </div>
                 <input
                   {...register('email', {
@@ -120,7 +126,7 @@ const RegisterPage = () => {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className="h-5 w-5 text-light-text-secondary" />
+                  <FiLock className="h-5 w-5 text-text-secondary" />
                 </div>
                 <input
                   {...register('password', {
@@ -140,9 +146,9 @@ const RegisterPage = () => {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <FiEyeOff className="h-5 w-5 text-light-text-secondary hover:text-light-text-primary" />
+                    <FiEyeOff className="h-5 w-5 text-text-secondary hover:text-text-primary" />
                   ) : (
-                    <FiEye className="h-5 w-5 text-light-text-secondary hover:text-light-text-primary" />
+                    <FiEye className="h-5 w-5 text-text-secondary hover:text-text-primary" />
                   )}
                 </button>
               </div>
@@ -157,7 +163,7 @@ const RegisterPage = () => {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className="h-5 w-5 text-light-text-secondary" />
+                  <FiLock className="h-5 w-5 text-text-secondary" />
                 </div>
                 <input
                   {...register('confirmPassword', {
@@ -174,9 +180,9 @@ const RegisterPage = () => {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
-                    <FiEyeOff className="h-5 w-5 text-light-text-secondary hover:text-light-text-primary" />
+                    <FiEyeOff className="h-5 w-5 text-text-secondary hover:text-text-primary" />
                   ) : (
-                    <FiEye className="h-5 w-5 text-light-text-secondary hover:text-light-text-primary" />
+                    <FiEye className="h-5 w-5 text-text-secondary hover:text-text-primary" />
                   )}
                 </button>
               </div>
@@ -203,11 +209,11 @@ const RegisterPage = () => {
             </div>
 
             <div className="text-center">
-              <p className="text-sm text-light-text-secondary">
+              <p className="text-sm text-text-secondary">
                 Already have an account?{' '}
                 <Link 
                   to="/login" 
-                  className="font-medium text-brand-teal hover:text-opacity-90 transition-colors"
+                  className="font-medium text-brand-primary hover:text-brand-secondary transition-colors duration-300"
                 >
                   Sign in
                 </Link>
