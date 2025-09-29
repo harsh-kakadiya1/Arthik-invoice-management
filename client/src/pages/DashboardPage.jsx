@@ -444,19 +444,19 @@ const DashboardPage = () => {
 
         {/* Delete Confirmation Modal */}
         {showDeleteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-dark-bg-secondary rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="bg-bg-secondary border border-border-primary rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
               <div className="flex items-center mb-4">
-                <div className="flex-shrink-0 w-10 h-10 mx-auto bg-state-danger bg-opacity-10 rounded-full flex items-center justify-center">
-                  <FiTrash2 className="h-5 w-5 text-state-danger" />
+                <div className="flex-shrink-0 w-12 h-12 mx-auto border-2 border-state-danger rounded-full flex items-center justify-center">
+                  <FiTrash2 className="h-6 w-6 text-state-danger" />
                 </div>
               </div>
               <div className="text-center">
-                <h3 className="text-lg font-medium text-light-text-primary mb-2">
+                <h3 className="text-lg font-medium text-text-primary mb-2 transition-colors duration-300">
                   Delete Invoice
                 </h3>
-                <p className="text-light-text-secondary mb-6">
-                  Are you sure you want to delete invoice <span className="font-medium">{invoiceToDelete?.invoiceNumber}</span>? 
+                <p className="text-text-secondary mb-6 transition-colors duration-300">
+                  Are you sure you want to delete invoice <span className="font-medium text-text-primary">{invoiceToDelete?.invoiceNumber}</span>? 
                   This action cannot be undone.
                 </p>
                 <div className="flex space-x-3 justify-center">
@@ -468,7 +468,7 @@ const DashboardPage = () => {
                   </button>
                   <button
                     onClick={confirmDelete}
-                    className="bg-state-danger hover:bg-state-danger-dark text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                    className="bg-transparent border-2 border-state-danger text-state-danger hover:bg-state-danger hover:text-white px-6 py-2 rounded-lg font-medium transition-all duration-300"
                   >
                     Delete
                   </button>
