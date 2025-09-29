@@ -153,8 +153,9 @@ const DashboardPage = () => {
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
+    <>
+      <MainLayout>
+        <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -442,43 +443,49 @@ const DashboardPage = () => {
           )}
         </div>
 
-        {/* Delete Confirmation Modal */}
-        {showDeleteModal && (
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="bg-bg-secondary border border-border-primary rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
-              <div className="flex items-center mb-4">
-                <div className="flex-shrink-0 w-12 h-12 mx-auto border-2 border-state-danger rounded-full flex items-center justify-center">
-                  <FiTrash2 className="h-6 w-6 text-state-danger" />
-                </div>
+        </div>
+      </MainLayout>
+
+      {/* Delete Confirmation Modal - Outside MainLayout for proper backdrop blur */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          {/* Glassmorphism Backdrop */}
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-md transition-all duration-300"></div>
+          
+          {/* Modal Content */}
+          <div className="relative bg-bg-secondary border border-border-primary rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0 w-12 h-12 mx-auto border-2 border-state-danger rounded-full flex items-center justify-center">
+                <FiTrash2 className="h-6 w-6 text-state-danger" />
               </div>
-              <div className="text-center">
-                <h3 className="text-lg font-medium text-text-primary mb-2 transition-colors duration-300">
-                  Delete Invoice
-                </h3>
-                <p className="text-text-secondary mb-6 transition-colors duration-300">
-                  Are you sure you want to delete invoice <span className="font-medium text-text-primary">{invoiceToDelete?.invoiceNumber}</span>? 
-                  This action cannot be undone.
-                </p>
-                <div className="flex space-x-3 justify-center">
-                  <button
-                    onClick={cancelDelete}
-                    className="btn-secondary px-6"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmDelete}
-                    className="bg-transparent border-2 border-state-danger text-state-danger hover:bg-state-danger hover:text-white px-6 py-2 rounded-lg font-medium transition-all duration-300"
-                  >
-                    Delete
-                  </button>
-                </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-text-primary mb-2 transition-colors duration-300">
+                Delete Invoice
+              </h3>
+              <p className="text-text-secondary mb-6 transition-colors duration-300">
+                Are you sure you want to delete invoice <span className="font-medium text-text-primary">{invoiceToDelete?.invoiceNumber}</span>? 
+                This action cannot be undone.
+              </p>
+              <div className="flex space-x-3 justify-center">
+                <button
+                  onClick={cancelDelete}
+                  className="btn-secondary px-6"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="bg-transparent border-2 border-state-danger text-state-danger hover:bg-state-danger hover:text-white px-6 py-2 rounded-lg font-medium transition-all duration-300"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           </div>
-        )}
-      </div>
-    </MainLayout>
+        </div>
+      )}
+    </>
   );
 };
 
