@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import { FiEye, FiEyeOff, FiMail, FiLock } from 'react-icons/fi';
+import ThemeToggle from '../components/ThemeToggle';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -34,7 +35,12 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg-primary flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-bg-primary flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+      {/* Theme Toggle - Top Right */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <img 
@@ -42,10 +48,10 @@ const LoginPage = () => {
             alt="Arthik Logo" 
             className="mx-auto h-16 w-auto"
           />
-          <h2 className="mt-6 text-3xl font-bold text-light-text-primary">
+          <h2 className="mt-6 text-3xl font-bold text-text-primary transition-colors duration-300">
             Sign in to Arthik
           </h2>
-          <p className="mt-2 text-sm text-light-text-secondary">
+          <p className="mt-2 text-sm text-text-secondary transition-colors duration-300">
             Manage your invoices with ease
           </p>
         </div>
@@ -64,7 +70,7 @@ const LoginPage = () => {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiMail className="h-5 w-5 text-light-text-secondary" />
+                  <FiMail className="h-5 w-5 text-text-secondary" />
                 </div>
                 <input
                   {...register('email', {
@@ -90,7 +96,7 @@ const LoginPage = () => {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className="h-5 w-5 text-light-text-secondary" />
+                  <FiLock className="h-5 w-5 text-text-secondary" />
                 </div>
                 <input
                   {...register('password', {
@@ -110,9 +116,9 @@ const LoginPage = () => {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <FiEyeOff className="h-5 w-5 text-light-text-secondary hover:text-light-text-primary" />
+                    <FiEyeOff className="h-5 w-5 text-text-secondary hover:text-text-primary transition-colors duration-200" />
                   ) : (
-                    <FiEye className="h-5 w-5 text-light-text-secondary hover:text-light-text-primary" />
+                    <FiEye className="h-5 w-5 text-text-secondary hover:text-text-primary transition-colors duration-200" />
                   )}
                 </button>
               </div>
@@ -139,11 +145,11 @@ const LoginPage = () => {
             </div>
 
             <div className="text-center">
-              <p className="text-sm text-light-text-secondary">
+              <p className="text-sm text-text-secondary transition-colors duration-300">
                 Don't have an account?{' '}
                 <Link 
                   to="/register" 
-                  className="font-medium text-brand-teal hover:text-opacity-90 transition-colors"
+                  className="font-medium text-brand-primary hover:text-brand-secondary transition-colors duration-300"
                 >
                   Sign up
                 </Link>

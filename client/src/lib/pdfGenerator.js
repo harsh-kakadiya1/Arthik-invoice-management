@@ -91,9 +91,31 @@ export const generatePDFClientSide = async (invoiceData) => {
         <head>
           <title>Invoice-${invoiceData.details.invoiceNumber || 'draft'}</title>
           <style>
+            @page {
+              size: A4;
+              margin: 0;
+            }
             @media print {
-              body { margin: 0; padding: 20px; }
-              * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+              body { 
+                margin: 0; 
+                padding: 10px; 
+                width: 210mm;
+                height: 297mm;
+                overflow: hidden;
+              }
+              * { 
+                -webkit-print-color-adjust: exact !important; 
+                color-adjust: exact !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+              }
+            }
+            body {
+              width: 210mm;
+              height: 297mm;
+              margin: 0;
+              padding: 10px;
+              overflow: hidden;
             }
             ${getBasicPrintStyles()}
           </style>
@@ -223,20 +245,36 @@ const getBasicPrintStyles = () => {
 
     /* Print-specific overrides */
     @media print {
-      .template4-container {
+      body {
         width: 210mm !important;
-        min-height: 297mm !important;
+        height: 297mm !important;
         margin: 0 !important;
-        page-break-inside: avoid;
+        padding: 10px !important;
+        overflow: hidden !important;
+      }
+      .template4-container {
+        width: 100% !important;
+        height: 275mm !important;
+        margin: 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
       .template4-sidebar {
         background-color: #1f2937 !important;
         -webkit-print-color-adjust: exact !important;
         color-adjust: exact !important;
+        padding: 1rem !important;
+      }
+      .template4-content {
+        padding: 1rem !important;
       }
       img {
         max-width: 100% !important;
         height: auto !important;
+      }
+      * {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
     }
   `;
