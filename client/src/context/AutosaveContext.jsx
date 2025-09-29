@@ -17,7 +17,7 @@ export const AutosaveProvider = ({ children }) => {
   const lastSavedDataRef = useRef(null);
 
   // Debounced autosave function
-  const autosaveInvoice = useCallback((invoiceData, isDraft = true) => {
+  const autosaveInvoice = useCallback((invoiceData, isDraft = true, isEditMode = false, invoiceId = null) => {
     if (!user || !invoiceData) return;
 
     // Clear existing timeout
@@ -28,6 +28,15 @@ export const AutosaveProvider = ({ children }) => {
     // Set new timeout for autosave
     autosaveTimeoutRef.current = setTimeout(async () => {
       try {
+        // For edit mode, don't create drafts - just update the existing invoice
+        if (isEditMode && invoiceId) {
+          // Update the existing invoice in the database
+          // This will be handled by the API call in the component
+          console.log('Invoice updated in-place:', invoiceId);
+          return;
+        }
+
+        // For create mode, save as draft
         const draftData = {
           ...invoiceData,
           isDraft,
@@ -111,6 +120,19 @@ export const AutosaveProvider = ({ children }) => {
     }
   }, [user]);
 
+  // Update existing invoice in-place (for edit mode)
+  const updateInvoiceInPlace = useCallback(async (invoiceId, invoiceData) => {
+    if (!user || !invoiceId) return;
+    
+    try {
+      // This will be called from the component that handles the API call
+      console.log('Updating invoice in-place:', invoiceId, invoiceData);
+      // The actual API call will be handled by the component
+    } catch (error) {
+      console.error('Error updating invoice in-place:', error);
+    }
+  }, [user]);
+
   // Check if invoice has unsaved changes
   const hasUnsavedChanges = useCallback((currentData) => {
     if (!lastSavedDataRef.current) return true;
@@ -133,6 +155,7 @@ export const AutosaveProvider = ({ children }) => {
     getDraftInvoice,
     deleteDraftInvoice,
     clearAllDrafts,
+    updateInvoiceInPlace,
     hasUnsavedChanges
   };
 

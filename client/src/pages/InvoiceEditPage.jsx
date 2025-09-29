@@ -58,7 +58,7 @@ const InvoiceEditPage = () => {
   }
 
   return (
-    <InvoiceProvider initialData={invoice} isEditMode={true}>
+    <InvoiceProvider initialData={invoice} isEditMode={true} invoiceId={id}>
       <CreateInvoicePage isEditMode={true} invoiceId={id} />
     </InvoiceProvider>
   );
