@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { InvoiceProvider } from './context/InvoiceContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { AutosaveProvider } from './context/AutosaveContext'
 import ProtectedRoute from './components/Layout/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -62,7 +63,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <AutosaveProvider>
+          <RouterProvider router={router} />
+        </AutosaveProvider>
       </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>,
