@@ -1,8 +1,9 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainLayout from '../components/Layout/MainLayout';
 import { useInvoice } from '../context/InvoiceContext';
-import { FiCheck, FiArrowLeft } from 'react-icons/fi';
+import { useAutosave } from '../context/AutosaveContext';
+import { FiCheck, FiArrowLeft, FiSave, FiClock } from 'react-icons/fi';
 import InvoicePreview from '../components/InvoicePreview';
 import FromToStep from '../components/FormSteps/FromToStep';
 import InvoiceDetailsStep from '../components/FormSteps/InvoiceDetailsStep';
@@ -11,8 +12,12 @@ import PaymentInfoStep from '../components/FormSteps/PaymentInfoStep';
 import SummaryStep from '../components/FormSteps/SummaryStep';
 
 const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
-  const { currentStep, setCurrentStep } = useInvoice();
+  const { currentStep, setCurrentStep, invoiceData, isDraft, markAsFinal } = useInvoice();
+  const { getDraftInvoice, deleteDraftInvoice } = useAutosave();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
 
   const steps = [
     { id: 0, name: 'From & To', description: 'Sender and receiver information' },
@@ -21,6 +26,31 @@ const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
     { id: 3, name: 'Payment Info', description: 'Payment terms and bank details' },
     { id: 4, name: 'Summary', description: 'Review and save' }
   ];
+
+  // Load draft invoice if specified in URL
+  useEffect(() => {
+    const draftParam = searchParams.get('draft');
+    if (draftParam && !isEditMode) {
+      try {
+        const draftData = JSON.parse(decodeURIComponent(draftParam));
+        setIsLoadingDraft(true);
+        // Load the draft data into the invoice context
+        // This would need to be implemented in the InvoiceContext
+        console.log('Loading draft invoice:', draftData);
+        setIsLoadingDraft(false);
+      } catch (error) {
+        console.error('Error loading draft invoice:', error);
+        setIsLoadingDraft(false);
+      }
+    }
+  }, [searchParams, isEditMode]);
+
+  // Update last saved time
+  useEffect(() => {
+    if (invoiceData && !isEditMode) {
+      setLastSaved(new Date());
+    }
+  }, [invoiceData, isEditMode]);
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -46,12 +76,23 @@ const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
         <div className="mb-8">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-light-text-primary">
+              <h1 className="text-3xl font-bold text-text-primary transition-colors duration-300">
                 {isEditMode ? 'Edit Invoice' : 'Create Invoice'}
               </h1>
-              <p className="text-light-text-secondary mt-1">
+              <p className="text-text-secondary mt-1 transition-colors duration-300">
                 {isEditMode ? 'Update your invoice details' : 'Follow the steps to create your invoice'}
               </p>
+              {!isEditMode && lastSaved && (
+                <div className="flex items-center mt-2 text-sm text-text-muted">
+                  <FiClock className="h-4 w-4 mr-1" />
+                  <span>Last saved: {lastSaved.toLocaleTimeString()}</span>
+                  {isDraft && (
+                    <span className="ml-2 px-2 py-1 bg-brand-primary bg-opacity-10 text-brand-primary rounded-full text-xs">
+                      Draft
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             {isEditMode && (
               <div className="flex items-center space-x-3">
@@ -154,7 +195,7 @@ const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <div className="card">
-                <h3 className="text-lg font-semibold text-light-text-primary mb-4">Live Preview</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-4 transition-colors duration-300">Live Preview</h3>
                 <div className="bg-white rounded-lg overflow-hidden">
                   <InvoicePreview />
                 </div>

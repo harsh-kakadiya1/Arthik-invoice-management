@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { DEFAULT_INVOICE_DATA } from '../lib/variables';
 import { generateInvoiceNumber, numberToWords } from '../lib/helpers';
+import { useAutosave } from './AutosaveContext';
 
 const InvoiceContext = createContext();
 
@@ -12,7 +13,11 @@ export const useInvoice = () => {
   return context;
 };
 
-export const InvoiceProvider = ({ children, initialData, isEditMode = false }) => {
+export const InvoiceProvider = ({ children, initialData, isEditMode = false, isDraftMode = false }) => {
+  const { autosaveInvoice } = useAutosave();
+  const isInitialMount = useRef(true);
+  const lastAutosaveData = useRef(null);
+
   const [invoiceData, setInvoiceData] = useState(() => {
     if (isEditMode && initialData) {
       console.log('Loading invoice data for edit mode:', initialData);
@@ -34,6 +39,7 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false }) =
     };
   });
   const [currentStep, setCurrentStep] = useState(0);
+  const [isDraft, setIsDraft] = useState(isDraftMode);
 
   const updateInvoiceData = (updates) => {
     setInvoiceData(prev => {
@@ -91,6 +97,24 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false }) =
       return newData;
     });
   };
+
+  // Autosave effect
+  useEffect(() => {
+    // Skip autosave on initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    // Only autosave if we have meaningful data and it's not edit mode
+    if (!isEditMode && invoiceData && (invoiceData.sender?.name || invoiceData.receiver?.name || invoiceData.details?.items?.length > 0)) {
+      // Check if data has actually changed
+      if (JSON.stringify(invoiceData) !== JSON.stringify(lastAutosaveData.current)) {
+        autosaveInvoice(invoiceData, isDraft);
+        lastAutosaveData.current = { ...invoiceData };
+      }
+    }
+  }, [invoiceData, isEditMode, isDraft, autosaveInvoice]);
 
   const resetInvoiceData = () => {
     setInvoiceData({
@@ -181,6 +205,12 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false }) =
     });
   };
 
+  const markAsFinal = () => {
+    setIsDraft(false);
+    // Trigger one final autosave as non-draft
+    autosaveInvoice(invoiceData, false);
+  };
+
   const value = {
     invoiceData,
     updateInvoiceData,
@@ -191,7 +221,10 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false }) =
     removeItem,
     moveItem,
     duplicateItem,
-    updateItem
+    updateItem,
+    isDraft,
+    setIsDraft,
+    markAsFinal
   };
 
   return (
