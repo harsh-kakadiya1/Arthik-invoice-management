@@ -117,24 +117,24 @@ const ClientAutoComplete = ({
                       <FiUser className="h-4 w-4 text-brand-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-light-text-primary truncate">
+                      <div className="font-medium text-gray-900 dark:text-white truncate">
                         {client.name}
                       </div>
                       <div className="space-y-1 mt-1">
                         {client.email && (
-                          <div className="flex items-center text-sm text-light-text-secondary">
+                          <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
                             <FiMail className="mr-1 h-3 w-3" />
                             <span className="truncate">{client.email}</span>
                           </div>
                         )}
                         {client.phone && (
-                          <div className="flex items-center text-sm text-light-text-secondary">
+                          <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
                             <FiPhone className="mr-1 h-3 w-3" />
                             <span>{client.phone}</span>
                           </div>
                         )}
                         {(client.address || client.city) && (
-                          <div className="flex items-center text-sm text-light-text-secondary">
+                          <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
                             <FiMapPin className="mr-1 h-3 w-3" />
                             <span className="truncate">
                               {client.address && client.city 
@@ -163,7 +163,7 @@ const ClientAutoComplete = ({
             </>
           ) : query.trim().length >= 2 ? (
             <div className="p-3">
-              <div className="flex items-center space-x-2 text-light-text-secondary">
+              <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
                 <FiUser className="h-4 w-4" />
                 <span>No clients found</span>
               </div>

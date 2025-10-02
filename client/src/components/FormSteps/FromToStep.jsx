@@ -253,6 +253,7 @@ const FromToStep = () => {
                     type="email"
                     className="form-input w-full pl-10"
                     placeholder="client@email.com"
+                    value={invoiceData.receiver?.email || ''}
                     onChange={(e) => {
                       updateInvoiceData({
                         receiver: { ...invoiceData.receiver, email: e.target.value }
@@ -274,6 +275,7 @@ const FromToStep = () => {
                     type="tel"
                     className="form-input w-full pl-10"
                     placeholder="+1 (555) 123-4567"
+                    value={invoiceData.receiver?.phone || ''}
                     onChange={(e) => {
                       updateInvoiceData({
                         receiver: { ...invoiceData.receiver, phone: e.target.value }
@@ -292,6 +294,7 @@ const FromToStep = () => {
                     type="text"
                     className="form-input w-full pl-10"
                     placeholder="Street address"
+                    value={invoiceData.receiver?.address || ''}
                     onChange={(e) => {
                       updateInvoiceData({
                         receiver: { ...invoiceData.receiver, address: e.target.value }
@@ -308,6 +311,7 @@ const FromToStep = () => {
                   type="text"
                   className="form-input w-full"
                   placeholder="City"
+                  value={invoiceData.receiver?.city || ''}
                   onChange={(e) => {
                     updateInvoiceData({
                       receiver: { ...invoiceData.receiver, city: e.target.value }
@@ -323,6 +327,7 @@ const FromToStep = () => {
                   type="text"
                   className="form-input w-full"
                   placeholder="Pin code"
+                  value={invoiceData.receiver?.pinCode || ''}
                   onChange={(e) => {
                     updateInvoiceData({
                       receiver: { ...invoiceData.receiver, pinCode: e.target.value }
