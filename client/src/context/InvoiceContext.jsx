@@ -73,14 +73,10 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false, inv
           }
         }
         
-        // Apply tax
-        const tax = newData.details.taxDetails;
-        if (tax.amount > 0) {
-          if (tax.amountType === 'percentage') {
-            totalAmount += (totalAmount * tax.amount) / 100;
-          } else {
-            totalAmount += tax.amount;
-          }
+        // Apply GST (only for exclusive)
+        const gst = newData.details.gstDetails;
+        if (gst && gst.rate > 0 && !gst.inclusive) {
+          totalAmount += (totalAmount * gst.rate) / 100;
         }
         
         // Apply shipping

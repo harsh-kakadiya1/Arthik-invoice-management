@@ -125,13 +125,11 @@ const renderTemplate1 = ({ sender, receiver, details }) => {
                 </dd>
               </dl>
             ` : ''}
-            ${details.taxDetails?.amount > 0 ? `
+            ${details.gstDetails?.rate > 0 ? `
               <dl class="grid grid-cols-5 gap-x-3">
-                <dt class="col-span-3 font-semibold text-gray-800">Tax:</dt>
+                <dt class="col-span-3 font-semibold text-gray-800">GST ${details.gstDetails.rate}% (${details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'}):</dt>
                 <dd class="col-span-2 text-gray-500">
-                  ${details.taxDetails.amountType === "amount"
-                    ? `+ ${formatNumberWithCommas(details.taxDetails.amount)} ${details.currency}`
-                    : `+ ${details.taxDetails.amount}%`}
+                  + ${formatNumberWithCommas(details.gstDetails.rate)}%
                 </dd>
               </dl>
             ` : ''}
@@ -314,13 +312,11 @@ const renderTemplate4 = ({ sender, receiver, details }) => {
                   </span>
                 </div>
               ` : ''}
-              ${details.taxDetails?.amount > 0 ? `
+              ${details.gstDetails?.rate > 0 ? `
                 <div class="totals-row">
-                  <span class="total-label">Tax:</span>
+                  <span class="total-label">GST ${details.gstDetails.rate}% (${details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'}):</span>
                   <span class="total-value">
-                    ${details.taxDetails.amountType === "amount"
-                      ? `+ ${formatNumberWithCommas(details.taxDetails.amount)} ${details.currency}`
-                      : `+ ${details.taxDetails.amount}%`}
+                    + ${formatNumberWithCommas(details.gstDetails.rate)}%
                   </span>
                 </div>
               ` : ''}

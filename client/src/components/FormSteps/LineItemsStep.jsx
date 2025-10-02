@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useInvoice } from '../../context/InvoiceContext';
 import { FiPlus, FiTrash2, FiPackage, FiMove, FiChevronUp, FiChevronDown } from 'react-icons/fi';
+import { GST_RATES } from '../../lib/variables';
 
 const LineItemsStep = () => {
   const { invoiceData, updateInvoiceData, addItem, removeItem, moveItem, duplicateItem, updateItem } = useInvoice();
@@ -16,7 +17,7 @@ const LineItemsStep = () => {
   // Calculate totals
   const subtotal = calculateSubtotal();
   const discountDetails = invoiceData.details.discountDetails || {};
-  const taxDetails = invoiceData.details.taxDetails || {};
+  const gstDetails = invoiceData.details.gstDetails || {};
   const shippingDetails = invoiceData.details.shippingDetails || {};
   
   const discountAmount = discountDetails.enabled ? 
@@ -26,17 +27,16 @@ const LineItemsStep = () => {
   
   const afterDiscount = subtotal - discountAmount;
   
-  const taxAmount = taxDetails.enabled ? 
-    (taxDetails.amountType === 'percentage' ? 
-      (afterDiscount * (Number(taxDetails.amount) || 0) / 100) : 
-      Number(taxDetails.amount) || 0) : 0;
+  // Calculate GST (only for exclusive)
+  const gstAmount = gstDetails.enabled && !gstDetails.inclusive ? 
+    (afterDiscount * (Number(gstDetails.rate) || 0) / 100) : 0;
   
   const shippingAmount = shippingDetails.enabled ? 
     (shippingDetails.costType === 'percentage' ? 
       (afterDiscount * (Number(shippingDetails.cost) || 0) / 100) : 
       Number(shippingDetails.cost) || 0) : 0;
   
-  const total = afterDiscount + taxAmount + shippingAmount;
+  const total = afterDiscount + gstAmount + shippingAmount;
 
   // Move item up
   const moveItemUp = (index) => {
@@ -228,17 +228,17 @@ const LineItemsStep = () => {
                 />
               </div>
               <div className="flex items-center space-x-4">
-                <label className="text-sm font-medium text-light-text-primary">Tax</label>
+                <label className="text-sm font-medium text-light-text-primary">GST</label>
                 <input
                   type="checkbox"
                   className="toggle-switch"
-                  checked={invoiceData.details.taxDetails?.enabled || false}
+                  checked={invoiceData.details.gstDetails?.enabled || false}
                   onChange={(e) => {
                     updateInvoiceData({
                       details: {
                         ...invoiceData.details,
-                        taxDetails: {
-                          ...invoiceData.details.taxDetails,
+                        gstDetails: {
+                          ...invoiceData.details.gstDetails,
                           enabled: e.target.checked
                         }
                       }
@@ -315,48 +315,110 @@ const LineItemsStep = () => {
                 </div>
               )}
 
-              {/* Tax Input */}
-              {invoiceData.details.taxDetails?.enabled && (
-                <div className="flex justify-between items-center p-3 border border-dark-border rounded-lg">
-                  <span className="text-light-text-primary font-medium">Tax</span>
-                  <div className="flex items-center space-x-3">
+              {/* GST Input */}
+              {invoiceData.details.gstDetails?.enabled && (
+                <div className="p-3 border border-dark-border rounded-lg space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-light-text-primary font-medium">GST Rate</span>
                     <select
-                      className="form-input w-20 text-center"
-                      value={invoiceData.details.taxDetails?.amountType || 'percentage'}
+                      className="form-input w-32 text-center"
+                      value={invoiceData.details.gstDetails?.rate || ''}
                       onChange={(e) => {
                         updateInvoiceData({
                           details: {
                             ...invoiceData.details,
-                            taxDetails: {
-                              ...invoiceData.details.taxDetails,
-                              amountType: e.target.value
+                            gstDetails: {
+                              ...invoiceData.details.gstDetails,
+                              rate: e.target.value === 'custom' ? '' : Number(e.target.value) || 0
                             }
                           }
                         });
                       }}
                     >
-                      <option value="amount">INR</option>
-                      <option value="percentage">%</option>
+                      <option value="">Select Rate</option>
+                      {GST_RATES.map((rate) => (
+                        <option key={rate.value} value={rate.value}>
+                          {rate.label}
+                        </option>
+                      ))}
                     </select>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      className="form-input w-24 text-right"
-                      placeholder="0.00"
-                      value={invoiceData.details.taxDetails?.amount || ''}
-                      onChange={(e) => {
-                        updateInvoiceData({
-                          details: {
-                            ...invoiceData.details,
-                            taxDetails: {
-                              ...invoiceData.details.taxDetails,
-                              amount: Number(e.target.value) || 0
+                  </div>
+                  
+                  {/* Custom Rate Input */}
+                  {invoiceData.details.gstDetails?.rate === '' && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-light-text-primary">Custom Rate (%)</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        className="form-input w-24 text-right"
+                        placeholder="0.00"
+                        value={invoiceData.details.gstDetails?.customRate || ''}
+                        onChange={(e) => {
+                          updateInvoiceData({
+                            details: {
+                              ...invoiceData.details,
+                              gstDetails: {
+                                ...invoiceData.details.gstDetails,
+                                rate: Number(e.target.value) || 0,
+                                customRate: Number(e.target.value) || 0
+                              }
                             }
-                          }
-                        });
-                      }}
-                    />
+                          });
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Inclusive/Exclusive Toggle */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-light-text-primary">GST Type</span>
+                    <div className="flex items-center space-x-4">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="gstType"
+                          value="exclusive"
+                          checked={!invoiceData.details.gstDetails?.inclusive}
+                          onChange={(e) => {
+                            updateInvoiceData({
+                              details: {
+                                ...invoiceData.details,
+                                gstDetails: {
+                                  ...invoiceData.details.gstDetails,
+                                  inclusive: false
+                                }
+                              }
+                            });
+                          }}
+                          className="form-radio"
+                        />
+                        <span className="text-sm text-light-text-primary">Exclusive</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="gstType"
+                          value="inclusive"
+                          checked={invoiceData.details.gstDetails?.inclusive}
+                          onChange={(e) => {
+                            updateInvoiceData({
+                              details: {
+                                ...invoiceData.details,
+                                gstDetails: {
+                                  ...invoiceData.details.gstDetails,
+                                  inclusive: true
+                                }
+                              }
+                            });
+                          }}
+                          className="form-radio"
+                        />
+                        <span className="text-sm text-light-text-primary">Inclusive</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               )}
@@ -430,12 +492,14 @@ const LineItemsStep = () => {
               <span className="text-lg font-bold">₹{afterDiscount.toFixed(2)}</span>
             </div>
 
-            {taxDetails.enabled && (
+            {gstDetails.enabled && (
               <div className="flex justify-between items-center mb-3">
                 <span className="text-lg font-medium">
-                  Tax {taxDetails.isPercentage ? `(${taxDetails.value}%)` : '(Fixed)'}:
+                  GST {gstDetails.rate}% ({gstDetails.inclusive ? 'Inclusive' : 'Exclusive'}):
                 </span>
-                <span className="text-lg font-bold text-red-600">₹{taxAmount.toFixed(2)}</span>
+                <span className="text-lg font-bold text-red-600">
+                  {gstDetails.inclusive ? 'Included in total' : `₹${gstAmount.toFixed(2)}`}
+                </span>
               </div>
             )}
 

@@ -44,7 +44,7 @@ exports.createInvoice = asyncHandler(async (req, res, next) => {
   req.body.user = req.user.id;
 
   // Calculate totals
-  const { items, discountDetails, taxDetails, shippingDetails } = req.body.details;
+  const { items, discountDetails, gstDetails, shippingDetails } = req.body.details;
   
   // Calculate subtotal
   let subTotal = 0;
@@ -67,13 +67,9 @@ exports.createInvoice = asyncHandler(async (req, res, next) => {
     }
   }
 
-  // Apply tax
-  if (taxDetails && taxDetails.amount > 0) {
-    if (taxDetails.amountType === 'percentage') {
-      totalAmount += (totalAmount * taxDetails.amount) / 100;
-    } else {
-      totalAmount += taxDetails.amount;
-    }
+  // Apply GST (only for exclusive)
+  if (gstDetails && gstDetails.rate > 0 && !gstDetails.inclusive) {
+    totalAmount += (totalAmount * gstDetails.rate) / 100;
   }
 
   // Apply shipping
@@ -112,7 +108,7 @@ exports.updateInvoice = asyncHandler(async (req, res, next) => {
 
   // Recalculate totals if items are being updated
   if (req.body.details && req.body.details.items) {
-    const { items, discountDetails, taxDetails, shippingDetails } = req.body.details;
+    const { items, discountDetails, gstDetails, shippingDetails } = req.body.details;
     
     let subTotal = 0;
     items.forEach(item => {
@@ -132,12 +128,8 @@ exports.updateInvoice = asyncHandler(async (req, res, next) => {
       }
     }
 
-    if (taxDetails && taxDetails.amount > 0) {
-      if (taxDetails.amountType === 'percentage') {
-        totalAmount += (totalAmount * taxDetails.amount) / 100;
-      } else {
-        totalAmount += taxDetails.amount;
-      }
+    if (gstDetails && gstDetails.rate > 0 && !gstDetails.inclusive) {
+      totalAmount += (totalAmount * gstDetails.rate) / 100;
     }
 
     if (shippingDetails && shippingDetails.cost > 0) {

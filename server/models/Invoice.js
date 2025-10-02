@@ -91,15 +91,19 @@ const InvoiceSchema = new mongoose.Schema({
         default: false
       }
     },
-    taxDetails: {
-      amount: {
+    gstDetails: {
+      rate: {
         type: Number,
         default: 0
       },
-      amountType: {
+      rateType: {
         type: String,
-        enum: ['amount', 'percentage'],
+        enum: ['percentage'],
         default: 'percentage'
+      },
+      inclusive: {
+        type: Boolean,
+        default: false
       },
       enabled: {
         type: Boolean,

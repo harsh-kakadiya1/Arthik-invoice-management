@@ -289,12 +289,11 @@ const InvoiceViewPage = () => {
                 </div>
               )}
               
-              {invoice.details.taxDetails?.amount > 0 && (
+              {invoice.details.gstDetails?.rate > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-light-text-secondary">Tax:</span>
+                  <span className="text-light-text-secondary">GST:</span>
                   <span className="text-light-text-primary">
-                    {invoice.details.taxDetails.amount}
-                    {invoice.details.taxDetails.amountType === 'percentage' ? '%' : ` ${invoice.details.currency}`}
+                    {invoice.details.gstDetails.rate}% ({invoice.details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'})
                   </span>
                 </div>
               )}

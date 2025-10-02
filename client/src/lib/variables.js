@@ -26,6 +26,14 @@ export const INVOICE_STATUSES = [
   { value: 'overdue', label: 'Overdue', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
 ];
 
+// GST rates
+export const GST_RATES = [
+  { value: 5, label: '5% GST' },
+  { value: 12, label: '12% GST' },
+  { value: 18, label: '18% GST' },
+  { value: 'custom', label: 'Custom Rate' }
+];
+
 // Payment terms
 export const PAYMENT_TERMS = [
   'Payment is due within 15 days',
@@ -74,9 +82,10 @@ export const DEFAULT_INVOICE_DATA = {
       amountType: 'amount',
       enabled: false
     },
-    taxDetails: {
-      amount: 0,
-      amountType: 'percentage',
+    gstDetails: {
+      rate: 0,
+      rateType: 'percentage',
+      inclusive: false,
       enabled: false
     },
     shippingDetails: {

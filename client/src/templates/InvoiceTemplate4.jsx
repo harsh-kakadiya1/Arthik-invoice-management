@@ -129,13 +129,11 @@ const InvoiceTemplate4 = ({ data }) => {
                                         </dd>
                                     </dl>
                                 )}
-                                {details.taxDetails?.amount != undefined && details.taxDetails?.amount > 0 && (
+                                {details.gstDetails?.rate != undefined && details.gstDetails?.rate > 0 && (
                                     <dl className="flex justify-between items-center border-b border-gray-100 pb-1">
-                                        <dt className="font-semibold text-gray-700">Tax:</dt>
+                                        <dt className="font-semibold text-gray-700">GST {details.gstDetails.rate}% ({details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'}):</dt>
                                         <dd className="text-gray-800">
-                                            {details.taxDetails.amountType === "amount"
-                                                ? `+ ${details.taxDetails.amount} ${details.currency}`
-                                                : `+ ${details.taxDetails.amount}%`}
+                                            + {details.gstDetails.rate}%
                                         </dd>
                                     </dl>
                                 )}

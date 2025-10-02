@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useInvoice } from '../../context/InvoiceContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '../../context/NavigationContext';
@@ -9,9 +10,10 @@ import InvoicePreviewModal from '../InvoicePreviewModal';
 import { generatePDF } from '../../lib/pdfGenerator';
 
 const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
+  const navigate = useNavigate();
   const { invoiceData, resetInvoiceData } = useInvoice();
   const { user } = useAuth();
-  const { hideWarning } = useNavigation();
+  const { hideWarning, forceHideModal } = useNavigation();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -54,11 +56,12 @@ const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
       
       setSaved(true);
       hideWarning(); // Hide the unsaved changes warning
+      forceHideModal(); // Force hide any modal that might be showing
       setTimeout(() => {
         if (!isEditMode) {
           resetInvoiceData();
         }
-        window.location.href = '/';
+        navigate('/', { replace: true }); // Use React Router navigation
       }, 2000);
     } catch (error) {
       setError(error.response?.data?.error || `Failed to ${isEditMode ? 'update' : 'save'} invoice`);
@@ -195,14 +198,11 @@ const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
                       </span>
                     </div>
                   )}
-                  {invoiceData.details.taxDetails?.amount > 0 && (
+                  {invoiceData.details.gstDetails?.rate > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-light-text-secondary">Tax:</span>
+                      <span className="text-light-text-secondary">GST:</span>
                       <span className="text-light-text-primary">
-                        {invoiceData.details.taxDetails.amountType === 'amount' 
-                          ? `${invoiceData.details.taxDetails.amount} ${invoiceData.details.currency}`
-                          : `${invoiceData.details.taxDetails.amount}%`
-                        }
+                        {invoiceData.details.gstDetails.rate}% ({invoiceData.details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'})
                       </span>
                     </div>
                   )}
