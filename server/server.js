@@ -29,11 +29,13 @@ app.use(cors({
 const authRoutes = require('./routes/authRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const pdfRoutes = require('./routes/pdfRoutes');
+const clientRoutes = require('./routes/clientRoutes');
 
 // Mount routers
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/invoices', invoiceRoutes);
 app.use('/api/v1/pdf', pdfRoutes);
+app.use('/api/v1/clients', clientRoutes);
 
 // Error handler middleware
 app.use(errorHandler);

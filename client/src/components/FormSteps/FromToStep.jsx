@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useInvoice } from '../../context/InvoiceContext';
+import { useAuth } from '../../context/AuthContext';
+import { useClients } from '../../context/ClientContext';
+import ClientAutoComplete from '../ClientAutoComplete';
 import { FiUser, FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
 
 const FromToStep = () => {
   const { invoiceData, updateInvoiceData } = useInvoice();
+  const { user } = useAuth();
+  const { createClient } = useClients();
+  const [showClientModal, setShowClientModal] = useState(false);
+  const [newClientData, setNewClientData] = useState({});
   
   const {
     register,
@@ -17,8 +24,53 @@ const FromToStep = () => {
     }
   });
 
+  // Pre-fill sender information from user profile
+  useEffect(() => {
+    if (user?.profile && !invoiceData.sender?.name) {
+      updateInvoiceData({
+        sender: {
+          name: user.profile.companyName || user.name,
+          email: user.email,
+          phone: user.profile.phone || '',
+          address: user.profile.address || '',
+          city: user.profile.city || '',
+          pinCode: user.profile.pinCode || ''
+        }
+      });
+    }
+  }, [user, invoiceData.sender?.name, updateInvoiceData]);
+
   const onSubmit = (data) => {
     updateInvoiceData(data);
+  };
+
+  const handleClientSelect = (client) => {
+    updateInvoiceData({
+      receiver: {
+        name: client.name,
+        email: client.email || '',
+        phone: client.phone || '',
+        address: client.address || '',
+        city: client.city || '',
+        pinCode: client.pinCode || ''
+      }
+    });
+  };
+
+  const handleNewClient = async (clientName) => {
+    setNewClientData({ name: clientName });
+    setShowClientModal(true);
+  };
+
+  const handleCreateClient = async (clientData) => {
+    try {
+      const newClient = await createClient(clientData);
+      handleClientSelect(newClient);
+      setShowClientModal(false);
+      setNewClientData({});
+    } catch (error) {
+      console.error('Error creating client:', error);
+    }
   };
 
   return (
@@ -132,30 +184,15 @@ const FromToStep = () => {
               </div>
 
               <div>
-                <label className="form-label">ZIP Code</label>
+                <label className="form-label">Pin Code</label>
                 <input
-                  {...register('sender.zipCode')}
+                  {...register('sender.pinCode')}
                   type="text"
                   className="form-input w-full"
-                  placeholder="ZIP/Postal code"
+                  placeholder="Pin code"
                   onChange={(e) => {
                     updateInvoiceData({
-                      sender: { ...invoiceData.sender, zipCode: e.target.value }
-                    });
-                  }}
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="form-label">Country</label>
-                <input
-                  {...register('sender.country')}
-                  type="text"
-                  className="form-input w-full"
-                  placeholder="Country"
-                  onChange={(e) => {
-                    updateInvoiceData({
-                      sender: { ...invoiceData.sender, country: e.target.value }
+                      sender: { ...invoiceData.sender, pinCode: e.target.value }
                     });
                   }}
                 />
@@ -171,18 +208,18 @@ const FromToStep = () => {
             </h4>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div className="md:col-span-2">
                 <label className="form-label">Client Name *</label>
-                <input
-                  {...register('receiver.name', { required: 'Client name is required' })}
-                  type="text"
-                  className="form-input w-full"
-                  placeholder="Client company or name"
-                  onChange={(e) => {
+                <ClientAutoComplete
+                  value={invoiceData.receiver?.name || ''}
+                  onChange={(value) => {
                     updateInvoiceData({
-                      receiver: { ...invoiceData.receiver, name: e.target.value }
+                      receiver: { ...invoiceData.receiver, name: value }
                     });
                   }}
+                  onClientSelect={handleClientSelect}
+                  onNewClient={handleNewClient}
+                  placeholder="Search for existing client or type new name"
                 />
                 {errors.receiver?.name && (
                   <p className="mt-1 text-sm text-state-danger">{errors.receiver.name.message}</p>
@@ -267,30 +304,15 @@ const FromToStep = () => {
               </div>
 
               <div>
-                <label className="form-label">ZIP Code</label>
+                <label className="form-label">Pin Code</label>
                 <input
-                  {...register('receiver.zipCode')}
+                  {...register('receiver.pinCode')}
                   type="text"
                   className="form-input w-full"
-                  placeholder="ZIP/Postal code"
+                  placeholder="Pin code"
                   onChange={(e) => {
                     updateInvoiceData({
-                      receiver: { ...invoiceData.receiver, zipCode: e.target.value }
-                    });
-                  }}
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="form-label">Country</label>
-                <input
-                  {...register('receiver.country')}
-                  type="text"
-                  className="form-input w-full"
-                  placeholder="Country"
-                  onChange={(e) => {
-                    updateInvoiceData({
-                      receiver: { ...invoiceData.receiver, country: e.target.value }
+                      receiver: { ...invoiceData.receiver, pinCode: e.target.value }
                     });
                   }}
                 />
@@ -299,6 +321,117 @@ const FromToStep = () => {
           </div>
         </div>
       </div>
+
+      {/* New Client Modal */}
+      {showClientModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-light-text-primary mb-4">
+                Add New Client
+              </h3>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                handleCreateClient(newClientData);
+              }} className="space-y-4">
+                <div>
+                  <label className="form-label">Client Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newClientData.name || ''}
+                    onChange={(e) => setNewClientData({ ...newClientData, name: e.target.value })}
+                    className="form-input w-full"
+                    placeholder="Enter client name"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Email</label>
+                  <div className="relative">
+                    <FiMail className="absolute left-3 top-3 h-4 w-4 text-light-text-secondary" />
+                    <input
+                      type="email"
+                      value={newClientData.email || ''}
+                      onChange={(e) => setNewClientData({ ...newClientData, email: e.target.value })}
+                      className="form-input w-full pl-10"
+                      placeholder="client@email.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="form-label">Phone</label>
+                  <div className="relative">
+                    <FiPhone className="absolute left-3 top-3 h-4 w-4 text-light-text-secondary" />
+                    <input
+                      type="tel"
+                      value={newClientData.phone || ''}
+                      onChange={(e) => setNewClientData({ ...newClientData, phone: e.target.value })}
+                      className="form-input w-full pl-10"
+                      placeholder="+91 9876543210"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="form-label">Address</label>
+                  <div className="relative">
+                    <FiMapPin className="absolute left-3 top-3 h-4 w-4 text-light-text-secondary" />
+                    <input
+                      type="text"
+                      value={newClientData.address || ''}
+                      onChange={(e) => setNewClientData({ ...newClientData, address: e.target.value })}
+                      className="form-input w-full pl-10"
+                      placeholder="Street address"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="form-label">City</label>
+                    <input
+                      type="text"
+                      value={newClientData.city || ''}
+                      onChange={(e) => setNewClientData({ ...newClientData, city: e.target.value })}
+                      className="form-input w-full"
+                      placeholder="City"
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Pin Code</label>
+                    <input
+                      type="text"
+                      value={newClientData.pinCode || ''}
+                      onChange={(e) => setNewClientData({ ...newClientData, pinCode: e.target.value })}
+                      className="form-input w-full"
+                      placeholder="123456"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowClientModal(false)}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                  >
+                    Add Client
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

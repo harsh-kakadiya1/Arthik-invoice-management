@@ -29,6 +29,34 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  // Profile information for invoices
+  profile: {
+    companyName: {
+      type: String,
+      trim: true,
+      maxlength: [100, 'Company name cannot be more than 100 characters']
+    },
+    phone: {
+      type: String,
+      trim: true,
+      maxlength: [20, 'Phone number cannot be more than 20 characters']
+    },
+    address: {
+      type: String,
+      trim: true,
+      maxlength: [200, 'Address cannot be more than 200 characters']
+    },
+    city: {
+      type: String,
+      trim: true,
+      maxlength: [50, 'City cannot be more than 50 characters']
+    },
+    pinCode: {
+      type: String,
+      trim: true,
+      maxlength: [10, 'Pin code cannot be more than 10 characters']
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now
