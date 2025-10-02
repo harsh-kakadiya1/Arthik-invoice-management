@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext'
 import { InvoiceProvider } from './context/InvoiceContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { AutosaveProvider } from './context/AutosaveContext'
+import AppWithSplash from './components/AppWithSplash'
 import ProtectedRoute from './components/Layout/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -64,7 +65,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ThemeProvider>
       <AuthProvider>
         <AutosaveProvider>
-          <RouterProvider router={router} />
+          <AppWithSplash>
+            <RouterProvider router={router} />
+          </AppWithSplash>
         </AutosaveProvider>
       </AuthProvider>
     </ThemeProvider>
