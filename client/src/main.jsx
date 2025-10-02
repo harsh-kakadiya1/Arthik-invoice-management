@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext'
 import { InvoiceProvider } from './context/InvoiceContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { AutosaveProvider } from './context/AutosaveContext'
+import { ClientProvider } from './context/ClientContext'
 import AppWithSplash from './components/AppWithSplash'
 import ProtectedRoute from './components/Layout/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
@@ -13,6 +14,8 @@ import DashboardPage from './pages/DashboardPage'
 import CreateInvoicePage from './pages/CreateInvoicePage'
 import InvoiceViewPage from './pages/InvoiceViewPage'
 import InvoiceEditPage from './pages/InvoiceEditPage'
+import ClientManagementPage from './pages/ClientManagementPage'
+import ProfilePage from './pages/ProfilePage'
 import './index.css'
 
 const router = createBrowserRouter([
@@ -37,7 +40,9 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <InvoiceProvider>
-          <CreateInvoicePage />
+          <ClientProvider>
+            <CreateInvoicePage />
+          </ClientProvider>
         </InvoiceProvider>
       </ProtectedRoute>
     )
@@ -57,6 +62,24 @@ const router = createBrowserRouter([
         <InvoiceEditPage />
       </ProtectedRoute>
     )
+  },
+  {
+    path: '/clients',
+    element: (
+      <ProtectedRoute>
+        <ClientProvider>
+          <ClientManagementPage />
+        </ClientProvider>
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/profile',
+    element: (
+      <ProtectedRoute>
+        <ProfilePage />
+      </ProtectedRoute>
+    )
   }
 ])
 
@@ -64,11 +87,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <AutosaveProvider>
-          <AppWithSplash>
-            <RouterProvider router={router} />
-          </AppWithSplash>
-        </AutosaveProvider>
+        <ClientProvider>
+          <AutosaveProvider>
+            <AppWithSplash>
+              <RouterProvider router={router} />
+            </AppWithSplash>
+          </AutosaveProvider>
+        </ClientProvider>
       </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>,
