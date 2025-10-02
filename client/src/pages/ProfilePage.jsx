@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FiUser, FiMail, FiPhone, FiMapPin, FiSave } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiMapPin, FiSave, FiImage, FiUpload, FiX } from 'react-icons/fi';
 import MainLayout from '../components/Layout/MainLayout';
 import api from '../lib/api';
 
@@ -13,8 +13,11 @@ const ProfilePage = () => {
     phone: '',
     address: '',
     city: '',
-    pinCode: ''
+    pinCode: '',
+    logo: ''
   });
+  const [logoPreview, setLogoPreview] = useState('');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (user?.profile) {
@@ -23,10 +26,47 @@ const ProfilePage = () => {
         phone: user.profile.phone || '',
         address: user.profile.address || '',
         city: user.profile.city || '',
-        pinCode: user.profile.pinCode || ''
+        pinCode: user.profile.pinCode || '',
+        logo: user.profile.logo || ''
       });
+      setLogoPreview(user.profile.logo || '');
     }
   }, [user]);
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file size (max 1MB)
+      if (file.size > 1 * 1024 * 1024) {
+        setMessage('Logo size must be less than 1MB');
+        setTimeout(() => setMessage(''), 3000);
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        setMessage('Please select an image file');
+        setTimeout(() => setMessage(''), 3000);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const logoData = e.target.result;
+        setFormData({ ...formData, logo: logoData });
+        setLogoPreview(logoData);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setFormData({ ...formData, logo: '' });
+    setLogoPreview('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,12 +74,22 @@ const ProfilePage = () => {
     setMessage('');
 
     try {
+      // Check logo size before sending
+      if (formData.logo && formData.logo.length > 1000000) {
+        setMessage('Logo is too large. Please use a smaller image (max 1MB).');
+        setTimeout(() => setMessage(''), 5000);
+        setLoading(false);
+        return;
+      }
+
       const response = await api.put('/auth/profile', formData);
       setUser(response.data.data);
       setMessage('Profile updated successfully!');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.error || 'Failed to update profile');
+      console.error('Profile update error:', error);
+      console.error('Error response:', error.response?.data);
+      setMessage(error.response?.data?.error || error.response?.data?.message || 'Failed to update profile');
       setTimeout(() => setMessage(''), 5000);
     } finally {
       setLoading(false);
@@ -107,6 +157,52 @@ const ProfilePage = () => {
                 className="form-input w-full"
                 placeholder="Your company or business name"
               />
+            </div>
+
+            {/* Company Logo */}
+            <div>
+              <label className="form-label">Company Logo</label>
+              <div className="space-y-4">
+                {/* Logo Preview */}
+                {logoPreview && (
+                  <div className="relative inline-block">
+                    <img
+                      src={logoPreview}
+                      alt="Company Logo Preview"
+                      className="h-20 w-auto border border-gray-300 dark:border-gray-600 rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    >
+                      <FiX className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                
+                {/* Upload Button */}
+                <div className="flex items-center space-x-4">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="btn-secondary flex items-center space-x-2"
+                  >
+                    <FiUpload className="h-4 w-4" />
+                    <span>{logoPreview ? 'Change Logo' : 'Upload Logo'}</span>
+                  </button>
+                  <span className="text-sm text-light-text-secondary">
+                    Max 1MB, PNG/JPG recommended
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div>

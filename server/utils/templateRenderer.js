@@ -40,7 +40,6 @@ const renderTemplate1 = ({ sender, receiver, details }) => {
     <div class="grid grid-cols-3 grid-cols-5 gap-y-1">
       <div class="col-span-full col-span-2 border-b border-gray-300">
         <p class="font-medium text-gray-800">${item.name}</p>
-        <p class="text-xs text-gray-600">${item.description || ''}</p>
       </div>
       <div class="border-b border-gray-300">
         <p class="text-gray-800">${item.quantity}</p>
@@ -218,7 +217,6 @@ const renderTemplate4 = ({ sender, receiver, details }) => {
     <tr class="items-row">
       <td class="item-description">
         <div class="font-medium text-gray-800">${item.name}</div>
-        <div class="text-xs text-gray-500">${item.description || ''}</div>
       </td>
       <td class="item-quantity text-center">${item.quantity}</td>
       <td class="item-rate text-right">${formatNumberWithCommas(item.unitPrice)} ${details.currency}</td>

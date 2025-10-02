@@ -254,8 +254,8 @@ const DashboardPage = () => {
                                 <button
                                   key={status.value}
                                   onClick={() => handleStatusUpdate(invoice._id, status.value)}
-                                  className={`w-full text-left px-3 py-2 text-sm hover:bg-dark-bg-primary transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                                    invoice.status === status.value ? 'bg-brand-teal bg-opacity-10 text-brand-teal' : 'text-light-text-primary'
+                                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                                    invoice.status === status.value ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 font-medium' : 'text-gray-700 dark:text-gray-300'
                                   }`}
                                 >
                                   {status.label}

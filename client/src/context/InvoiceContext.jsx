@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { DEFAULT_INVOICE_DATA } from '../lib/variables';
 import { generateInvoiceNumber, numberToWords } from '../lib/helpers';
+import { useAuth } from './AuthContext';
 
 const InvoiceContext = createContext();
 
@@ -13,6 +14,7 @@ export const useInvoice = () => {
 };
 
 export const InvoiceProvider = ({ children, initialData, isEditMode = false, invoiceId = null }) => {
+  const { user } = useAuth();
   const isInitialMount = useRef(true);
   const updateTimeoutRef = useRef(null);
 
@@ -30,10 +32,14 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false, inv
       console.log('Merged invoice data:', mergedData);
       return mergedData;
     }
-    // For create mode, use default data
+    // For create mode, use default data with profile logo if available
     return {
       ...DEFAULT_INVOICE_DATA,
-      invoiceNumber: generateInvoiceNumber()
+      invoiceNumber: generateInvoiceNumber(),
+      details: {
+        ...DEFAULT_INVOICE_DATA.details,
+        invoiceLogo: user?.profile?.logo || ''
+      }
     };
   });
   const [currentStep, setCurrentStep] = useState(0);

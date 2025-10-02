@@ -42,7 +42,7 @@ const ClientAutoComplete = ({
     setQuery(newQuery);
     onChange && onChange(newQuery);
 
-    if (newQuery.trim().length >= 2) {
+    if (newQuery.trim().length >= 1) {
       setLoading(true);
       try {
         const results = await searchClients(newQuery);
@@ -87,7 +87,7 @@ const ClientAutoComplete = ({
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => query.trim().length >= 2 && setShowSuggestions(true)}
+          onFocus={() => query.trim().length >= 1 && setShowSuggestions(true)}
           className="form-input w-full pl-10"
           placeholder={placeholder}
         />
@@ -161,7 +161,7 @@ const ClientAutoComplete = ({
                 </div>
               </div>
             </>
-          ) : query.trim().length >= 2 ? (
+          ) : query.trim().length >= 1 ? (
             <div className="p-3">
               <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
                 <FiUser className="h-4 w-4" />

@@ -50,14 +50,13 @@ const InvoiceSchema = new mongoose.Schema({
     },
     currency: {
       type: String,
-      default: 'USD'
+      default: 'INR'
     },
     items: [{
       name: {
         type: String,
         required: [true, 'Please add item name']
       },
-      description: String,
       quantity: {
         type: Number,
         required: [true, 'Please add quantity'],

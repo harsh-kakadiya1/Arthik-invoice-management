@@ -136,35 +136,22 @@ const LineItemsStep = () => {
                     </div>
                   </div>
                   
-                  {/* First Row: Item Name and Description */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="form-label">Item Name *</label>
-                      <input
-                        type="text"
-                        className="form-input w-full"
-                        placeholder="Product or service name"
-                        value={invoiceData.details.items[index]?.name || ''}
-                        onChange={(e) => {
-                          const newItems = [...invoiceData.details.items];
-                          newItems[index] = { ...newItems[index], name: e.target.value };
-                          updateInvoiceData({
-                            details: { ...invoiceData.details, items: newItems }
-                          });
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="form-label">Description</label>
-                      <input
-                        type="text"
-                        className="form-input w-full"
-                        placeholder="Brief description"
-                        value={invoiceData.details.items[index]?.description || ''}
-                        onChange={(e) => updateItem(index, 'description', e.target.value)}
-                      />
-                    </div>
+                  {/* Item Name */}
+                  <div className="mb-4">
+                    <label className="form-label">Item Name *</label>
+                    <input
+                      type="text"
+                      className="form-input w-full"
+                      placeholder="Product or service name"
+                      value={invoiceData.details.items[index]?.name || ''}
+                      onChange={(e) => {
+                        const newItems = [...invoiceData.details.items];
+                        newItems[index] = { ...newItems[index], name: e.target.value };
+                        updateInvoiceData({
+                          details: { ...invoiceData.details, items: newItems }
+                        });
+                      }}
+                    />
                   </div>
 
                   {/* Second Row: Qty, Rate, and Total */}

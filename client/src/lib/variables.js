@@ -5,14 +5,9 @@ export const DATE_OPTIONS = {
   day: 'numeric'
 };
 
-// Currency options
+// Currency options - India only
 export const CURRENCY_OPTIONS = [
-  { value: 'USD', label: 'USD ($)', symbol: '$' },
-  { value: 'EUR', label: 'EUR (€)', symbol: '€' },
-  { value: 'GBP', label: 'GBP (£)', symbol: '£' },
   { value: 'INR', label: 'INR (₹)', symbol: '₹' },
-  { value: 'CAD', label: 'CAD (C$)', symbol: 'C$' },
-  { value: 'AUD', label: 'AUD (A$)', symbol: 'A$' },
 ];
 
 // Invoice templates
@@ -25,10 +20,10 @@ export const INVOICE_TEMPLATES = [
 
 // Invoice statuses
 export const INVOICE_STATUSES = [
-  { value: 'draft', label: 'Draft', color: 'text-gray-500' },
-  { value: 'sent', label: 'Sent', color: 'text-blue-500' },
-  { value: 'paid', label: 'Paid', color: 'text-green-500' },
-  { value: 'overdue', label: 'Overdue', color: 'text-red-500' },
+  { value: 'draft', label: 'Draft', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' },
+  { value: 'sent', label: 'Sent', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
+  { value: 'paid', label: 'Paid', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
+  { value: 'overdue', label: 'Overdue', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
 ];
 
 // Payment terms
@@ -68,7 +63,6 @@ export const DEFAULT_INVOICE_DATA = {
     items: [
       {
         name: '',
-        description: '',
         quantity: 1,
         unitPrice: 0,
         total: 0

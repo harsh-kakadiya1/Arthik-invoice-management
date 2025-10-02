@@ -55,6 +55,11 @@ const UserSchema = new mongoose.Schema({
       type: String,
       trim: true,
       maxlength: [10, 'Pin code cannot be more than 10 characters']
+    },
+    logo: {
+      type: String,
+      trim: true,
+      maxlength: [1000000, 'Logo size cannot exceed 1MB when encoded']
     }
   },
   createdAt: {

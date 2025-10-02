@@ -85,19 +85,15 @@ const router = createBrowserRouter([
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <ThemeProvider>
-      <AuthProvider>
-        <ClientProvider>
-          <NavigationProvider>
-            <NavigationWrapper>
-              <AppWithSplash>
-                <RouterProvider router={router} />
-              </AppWithSplash>
-            </NavigationWrapper>
-          </NavigationProvider>
-        </ClientProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </React.StrictMode>,
+  <ThemeProvider>
+    <AuthProvider>
+      <NavigationProvider>
+        <NavigationWrapper>
+          <AppWithSplash>
+            <RouterProvider router={router} />
+          </AppWithSplash>
+        </NavigationWrapper>
+      </NavigationProvider>
+    </AuthProvider>
+  </ThemeProvider>,
 )
