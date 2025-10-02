@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useInvoice } from '../../context/InvoiceContext';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigation } from '../../context/NavigationContext';
 import { FiSave, FiDownload, FiEye, FiCheck } from 'react-icons/fi';
 import api from '../../lib/api';
 import { formatNumberWithCommas } from '../../lib/helpers';
@@ -10,6 +11,7 @@ import { generatePDF } from '../../lib/pdfGenerator';
 const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
   const { invoiceData, resetInvoiceData } = useInvoice();
   const { user } = useAuth();
+  const { hideWarning } = useNavigation();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -51,6 +53,7 @@ const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
       }
       
       setSaved(true);
+      hideWarning(); // Hide the unsaved changes warning
       setTimeout(() => {
         if (!isEditMode) {
           resetInvoiceData();

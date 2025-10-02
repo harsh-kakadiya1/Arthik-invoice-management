@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '../components/Layout/MainLayout';
 import { useInvoice } from '../context/InvoiceContext';
+import { useNavigation } from '../context/NavigationContext';
 import { FiCheck, FiArrowLeft, FiSave } from 'react-icons/fi';
 import InvoicePreview from '../components/InvoicePreview';
 import FromToStep from '../components/FormSteps/FromToStep';
@@ -12,8 +13,12 @@ import SummaryStep from '../components/FormSteps/SummaryStep';
 
 const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
   const { currentStep, setCurrentStep, invoiceData } = useInvoice();
+  const { showWarning, hideWarning, navigateWithWarning, forceHideModal } = useNavigation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [mouseLeftPage, setMouseLeftPage] = useState(false);
 
   const steps = [
     { id: 0, name: 'From & To', description: 'Sender and receiver information' },
@@ -22,6 +27,127 @@ const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
     { id: 3, name: 'Payment Info', description: 'Payment terms and bank details' },
     { id: 4, name: 'Summary', description: 'Review and save' }
   ];
+
+  // Check if there are unsaved changes (only for create mode)
+  useEffect(() => {
+    if (!isEditMode) {
+      const hasData = invoiceData && (
+        (invoiceData.sender && (invoiceData.sender.name || invoiceData.sender.email)) ||
+        (invoiceData.receiver && (invoiceData.receiver.name || invoiceData.receiver.email)) ||
+        (invoiceData.details && invoiceData.details.items && invoiceData.details.items.length > 0 && 
+         invoiceData.details.items.some(item => item.name || item.description))
+      );
+      setHasUnsavedChanges(hasData);
+      
+      if (hasData) {
+        showWarning('You have unsaved changes. Are you sure you want to leave? Your data will be lost.');
+      } else {
+        hideWarning();
+      }
+    } else {
+      hideWarning();
+    }
+  }, [invoiceData, isEditMode, showWarning, hideWarning]);
+
+  // Detect mouse leaving page and keyboard navigation (only for create mode)
+  useEffect(() => {
+    if (!isEditMode && hasUnsavedChanges) {
+      let mouseTimeout;
+      let isMouseOutside = false;
+
+      const handleMouseLeave = (e) => {
+        // Check if mouse is leaving the browser window
+        if (e.clientY <= 0 || e.clientX <= 0 || 
+            e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+          isMouseOutside = true;
+          setMouseLeftPage(true);
+          mouseTimeout = setTimeout(() => {
+            if (isMouseOutside) {
+              navigateWithWarning(navigate, '/');
+            }
+          }, 2000); // 2 second delay before showing warning
+        }
+      };
+
+      const handleMouseEnter = () => {
+        isMouseOutside = false;
+        setMouseLeftPage(false);
+        if (mouseTimeout) {
+          clearTimeout(mouseTimeout);
+        }
+      };
+
+      const handleKeyDown = (e) => {
+        // Detect Alt + Left Arrow (browser back) or Alt + Right Arrow (browser forward)
+        if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+          e.preventDefault();
+          navigateWithWarning(navigate, '/');
+        }
+        // Detect Ctrl + R (refresh) or F5
+        if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+          e.preventDefault();
+          navigateWithWarning(navigate, '/');
+        }
+        // Detect Ctrl + W (close tab)
+        if (e.ctrlKey && e.key === 'w') {
+          e.preventDefault();
+          navigateWithWarning(navigate, '/');
+        }
+      };
+
+      // Handle browser back/forward button
+      const handleBeforeUnload = (e) => {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return 'You have unsaved changes. Are you sure you want to leave?';
+      };
+
+      const handlePopState = (e) => {
+        e.preventDefault();
+        // Push the current state back to prevent navigation
+        window.history.pushState(null, '', location.pathname);
+        // Show warning modal
+        navigateWithWarning(navigate, '/');
+      };
+
+      // Push a state to detect back button usage
+      window.history.pushState(null, '', location.pathname);
+
+      // Add event listeners
+      document.addEventListener('mouseleave', handleMouseLeave);
+      document.addEventListener('mouseenter', handleMouseEnter);
+      document.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      window.addEventListener('popstate', handlePopState);
+
+      return () => {
+        document.removeEventListener('mouseleave', handleMouseLeave);
+        document.removeEventListener('mouseenter', handleMouseEnter);
+        document.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        window.removeEventListener('popstate', handlePopState);
+        if (mouseTimeout) {
+          clearTimeout(mouseTimeout);
+        }
+      };
+    }
+  }, [hasUnsavedChanges, isEditMode, location.pathname, navigateWithWarning, navigate]);
+
+  // Cleanup warning when component unmounts
+  useEffect(() => {
+    return () => {
+      forceHideModal();
+    };
+  }, []); // Empty dependency array - only run on unmount
+
+  // Custom navigation function with warning
+  const handleNavigate = (path) => {
+    if (!isEditMode && hasUnsavedChanges) {
+      navigateWithWarning(navigate, path);
+    } else {
+      navigate(path);
+    }
+  };
 
 
   const renderStepContent = () => {
@@ -54,16 +180,27 @@ const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
               <p className="text-text-secondary mt-1 transition-colors duration-300">
                 {isEditMode ? 'Update your invoice details' : 'Follow the steps to create your invoice'}
               </p>
+              {!isEditMode && hasUnsavedChanges && (
+                <div className="flex items-center mt-2 text-sm text-orange-600 dark:text-orange-400">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                  <span>You have unsaved changes</span>
+                  {mouseLeftPage && (
+                    <span className="ml-2 text-xs text-red-600 dark:text-red-400">
+                      (Mouse left page - warning will appear if you don't return)
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
-            {isEditMode && (
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => navigate('/')}
-                  className="btn-secondary flex items-center space-x-2"
-                >
-                  <FiArrowLeft className="h-4 w-4" />
-                  <span>Back</span>
-                </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => handleNavigate('/')}
+                className="btn-secondary flex items-center space-x-2"
+              >
+                <FiArrowLeft className="h-4 w-4" />
+                <span>Back</span>
+              </button>
+              {isEditMode && (
                 <button
                   onClick={() => {
                     // This will trigger the update in SummaryStep
@@ -74,8 +211,8 @@ const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
                   <FiCheck className="h-4 w-4" />
                   <span>Update Invoice</span>
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 

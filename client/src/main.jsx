@@ -5,7 +5,9 @@ import { AuthProvider } from './context/AuthContext'
 import { InvoiceProvider } from './context/InvoiceContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { ClientProvider } from './context/ClientContext'
+import { NavigationProvider } from './context/NavigationContext'
 import AppWithSplash from './components/AppWithSplash'
+import NavigationWrapper from './components/NavigationWrapper'
 import ProtectedRoute from './components/Layout/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -87,9 +89,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ThemeProvider>
       <AuthProvider>
         <ClientProvider>
-          <AppWithSplash>
-            <RouterProvider router={router} />
-          </AppWithSplash>
+          <NavigationProvider>
+            <NavigationWrapper>
+              <AppWithSplash>
+                <RouterProvider router={router} />
+              </AppWithSplash>
+            </NavigationWrapper>
+          </NavigationProvider>
         </ClientProvider>
       </AuthProvider>
     </ThemeProvider>

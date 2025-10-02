@@ -100,13 +100,13 @@ const ClientManagementPage = () => {
         {/* Search */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <FiSearch className="absolute left-3 top-3 h-4 w-4 text-light-text-secondary" />
+            <FiSearch className="absolute left-3 top-3 h-4 w-4 text-gray-500 dark:text-gray-400" />
             <input
               type="text"
               placeholder="Search clients..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="form-input w-full pl-10"
+              className="w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
             />
           </div>
         </div>
@@ -213,60 +213,60 @@ const ClientManagementPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-xl font-semibold text-light-text-primary mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 {editingClient ? 'Edit Client' : 'Add New Client'}
               </h2>
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="form-label">Client Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Client Name *</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="form-input w-full"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
                     placeholder="Enter client name"
                   />
                 </div>
 
                 <div>
-                  <label className="form-label">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                   <div className="relative">
-                    <FiMail className="absolute left-3 top-3 h-4 w-4 text-light-text-secondary" />
+                    <FiMail className="absolute left-3 top-3 h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="form-input w-full pl-10"
+                      className="w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
                       placeholder="client@email.com"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="form-label">Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
                   <div className="relative">
-                    <FiPhone className="absolute left-3 top-3 h-4 w-4 text-light-text-secondary" />
+                    <FiPhone className="absolute left-3 top-3 h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <input
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="form-input w-full pl-10"
+                      className="w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
                       placeholder="+91 9876543210"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="form-label">Address</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
                   <div className="relative">
-                    <FiMapPin className="absolute left-3 top-3 h-4 w-4 text-light-text-secondary" />
+                    <FiMapPin className="absolute left-3 top-3 h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <input
                       type="text"
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      className="form-input w-full pl-10"
+                      className="w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
                       placeholder="Street address"
                     />
                   </div>
@@ -274,22 +274,22 @@ const ClientManagementPage = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="form-label">City</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
                     <input
                       type="text"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="form-input w-full"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
                       placeholder="City"
                     />
                   </div>
                   <div>
-                    <label className="form-label">Pin Code</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pin Code</label>
                     <input
                       type="text"
                       value={formData.pinCode}
                       onChange={(e) => setFormData({ ...formData, pinCode: e.target.value })}
-                      className="form-input w-full"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
                       placeholder="123456"
                     />
                   </div>
@@ -299,13 +299,13 @@ const ClientManagementPage = () => {
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="btn-secondary text-text-primary hover:text-white hover:bg-gray-600"
+                    className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-black border border-transparent rounded-md transition-colors duration-200"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="btn-primary text-white bg-brand-primary hover:bg-brand-secondary"
+                    className="px-4 py-2 text-sm font-medium text-white bg-brand-primary hover:bg-brand-secondary border border-transparent rounded-md transition-colors duration-200"
                   >
                     {editingClient ? 'Update Client' : 'Add Client'}
                   </button>

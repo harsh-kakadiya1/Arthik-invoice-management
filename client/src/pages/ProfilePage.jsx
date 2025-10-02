@@ -39,7 +39,7 @@ const ProfilePage = () => {
       setMessage('Profile updated successfully!');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Failed to update profile');
+      setMessage(error.response?.data?.error || 'Failed to update profile');
       setTimeout(() => setMessage(''), 5000);
     } finally {
       setLoading(false);

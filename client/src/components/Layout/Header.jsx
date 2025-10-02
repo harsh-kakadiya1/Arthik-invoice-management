@@ -1,12 +1,15 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigation } from '../../context/NavigationContext';
 import { FiLogOut, FiUser, FiUsers, FiSettings, FiHome, FiFileText } from 'react-icons/fi';
 import ThemeToggle from '../ThemeToggle';
 
 const Header = () => {
   const { user, logout } = useAuth();
+  const { navigateWithWarning } = useNavigation();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
@@ -24,14 +27,17 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
-          <Link to="/" className="flex items-center">
+          <button 
+            onClick={() => navigateWithWarning(navigate, '/')}
+            className="flex items-center hover:opacity-80 transition-opacity"
+          >
             <img 
               src="/logo.png" 
               alt="Arthik Logo" 
               className="h-8 w-auto mr-3"
             />
             <h1 className="text-xl font-bold text-brand-primary transition-colors duration-300">Arthik</h1>
-          </Link>
+          </button>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
@@ -39,9 +45,9 @@ const Header = () => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               return (
-                <Link
+                <button
                   key={item.path}
-                  to={item.path}
+                  onClick={() => navigateWithWarning(navigate, item.path)}
                   className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${
                     isActive
                       ? 'text-white bg-brand-primary'
@@ -50,7 +56,7 @@ const Header = () => {
                 >
                   <Icon className="h-4 w-4" />
                   <span>{item.label}</span>
-                </Link>
+                </button>
               );
             })}
           </nav>
