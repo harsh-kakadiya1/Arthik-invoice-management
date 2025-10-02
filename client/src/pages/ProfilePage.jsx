@@ -175,7 +175,7 @@ const ProfilePage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary flex items-center space-x-2"
+                className="btn-primary text-white bg-brand-primary hover:bg-brand-secondary flex items-center space-x-2"
               >
                 {loading ? (
                   <>

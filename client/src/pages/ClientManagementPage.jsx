@@ -299,13 +299,13 @@ const ClientManagementPage = () => {
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="btn-secondary"
+                    className="btn-secondary text-text-primary hover:text-white hover:bg-gray-600"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="btn-primary"
+                    className="btn-primary text-white bg-brand-primary hover:bg-brand-secondary"
                   >
                     {editingClient ? 'Update Client' : 'Add Client'}
                   </button>

@@ -4,7 +4,6 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { InvoiceProvider } from './context/InvoiceContext'
 import { ThemeProvider } from './context/ThemeContext'
-import { AutosaveProvider } from './context/AutosaveContext'
 import { ClientProvider } from './context/ClientContext'
 import AppWithSplash from './components/AppWithSplash'
 import ProtectedRoute from './components/Layout/ProtectedRoute'
@@ -88,11 +87,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ThemeProvider>
       <AuthProvider>
         <ClientProvider>
-          <AutosaveProvider>
-            <AppWithSplash>
-              <RouterProvider router={router} />
-            </AppWithSplash>
-          </AutosaveProvider>
+          <AppWithSplash>
+            <RouterProvider router={router} />
+          </AppWithSplash>
         </ClientProvider>
       </AuthProvider>
     </ThemeProvider>

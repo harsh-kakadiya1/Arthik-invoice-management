@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { DEFAULT_INVOICE_DATA } from '../lib/variables';
 import { generateInvoiceNumber, numberToWords } from '../lib/helpers';
-import { useAutosave } from './AutosaveContext';
 
 const InvoiceContext = createContext();
 
@@ -13,10 +12,8 @@ export const useInvoice = () => {
   return context;
 };
 
-export const InvoiceProvider = ({ children, initialData, isEditMode = false, isDraftMode = false, invoiceId = null }) => {
-  const { autosaveInvoice, updateInvoiceInPlace } = useAutosave();
+export const InvoiceProvider = ({ children, initialData, isEditMode = false, invoiceId = null }) => {
   const isInitialMount = useRef(true);
-  const lastAutosaveData = useRef(null);
   const updateTimeoutRef = useRef(null);
 
   const [invoiceData, setInvoiceData] = useState(() => {
@@ -40,7 +37,6 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false, isD
     };
   });
   const [currentStep, setCurrentStep] = useState(0);
-  const [isDraft, setIsDraft] = useState(isDraftMode);
 
   const updateInvoiceData = (updates) => {
     setInvoiceData(prev => {
@@ -99,40 +95,6 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false, isD
     });
   };
 
-  // Autosave effect
-  useEffect(() => {
-    // Skip autosave on initial mount
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    // Check if data has actually changed
-    if (JSON.stringify(invoiceData) !== JSON.stringify(lastAutosaveData.current)) {
-      if (isEditMode && invoiceId) {
-        // For edit mode, update the existing invoice in-place
-        if (updateTimeoutRef.current) {
-          clearTimeout(updateTimeoutRef.current);
-        }
-        
-        updateTimeoutRef.current = setTimeout(async () => {
-          try {
-            // Import api here to avoid circular dependency
-            const { default: api } = await import('../lib/api');
-            await api.put(`/invoices/${invoiceId}`, invoiceData);
-            console.log('Invoice updated in-place:', invoiceId);
-            lastAutosaveData.current = { ...invoiceData };
-          } catch (error) {
-            console.error('Error updating invoice in-place:', error);
-          }
-        }, 2000); // 2 second delay
-      } else if (!isEditMode && invoiceData && (invoiceData.sender?.name || invoiceData.receiver?.name || invoiceData.details?.items?.length > 0)) {
-        // For create mode, save as draft
-        autosaveInvoice(invoiceData, isDraft, isEditMode, invoiceId);
-        lastAutosaveData.current = { ...invoiceData };
-      }
-    }
-  }, [invoiceData, isEditMode, isDraft, autosaveInvoice, invoiceId]);
 
   const resetInvoiceData = () => {
     setInvoiceData({
@@ -223,11 +185,6 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false, isD
     });
   };
 
-  const markAsFinal = () => {
-    setIsDraft(false);
-    // Trigger one final autosave as non-draft
-    autosaveInvoice(invoiceData, false, isEditMode, invoiceId);
-  };
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -248,10 +205,7 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false, isD
     removeItem,
     moveItem,
     duplicateItem,
-    updateItem,
-    isDraft,
-    setIsDraft,
-    markAsFinal
+    updateItem
   };
 
   return (

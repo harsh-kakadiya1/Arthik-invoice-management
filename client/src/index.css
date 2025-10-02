@@ -156,7 +156,7 @@ select.form-input:focus {
 
 .btn-primary {
   background-color: var(--brand-primary);
-  color: white;
+  color: white !important;
   font-weight: 500;
   padding: 0.5rem 1.5rem;
   border-radius: 0.5rem;
@@ -166,14 +166,15 @@ select.form-input:focus {
 }
 
 .btn-primary:hover {
-  background-color: var(--brand-secondary);
+  background-color: var(--brand-secondary) !important;
+  color: white !important;
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
 .btn-secondary {
   background-color: var(--bg-secondary);
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
   font-weight: 500;
   padding: 0.5rem 1.5rem;
   border-radius: 0.5rem;
@@ -183,7 +184,8 @@ select.form-input:focus {
 }
 
 .btn-secondary:hover {
-  background-color: var(--bg-tertiary);
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
   border-color: var(--border-secondary);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
