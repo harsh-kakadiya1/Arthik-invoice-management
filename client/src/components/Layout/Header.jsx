@@ -44,8 +44,8 @@ const Header = () => {
                   to={item.path}
                   className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${
                     isActive
-                      ? 'text-brand-primary bg-brand-primary bg-opacity-10'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
+                      ? 'text-white bg-brand-primary'
+                      : 'text-text-secondary hover:text-white hover:bg-brand-primary'
                   }`}
                 >
                   <Icon className="h-4 w-4" />

@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiPlus, FiEdit, FiTrash2, FiEye, FiDownload, FiChevronDown, FiFileText, FiClock } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2, FiEye, FiDownload, FiChevronDown } from 'react-icons/fi';
 import MainLayout from '../components/Layout/MainLayout';
 import api from '../lib/api';
 import { formatDate } from '../lib/helpers';
 import { INVOICE_STATUSES } from '../lib/variables';
 import { generatePDF } from '../lib/pdfGenerator';
-import { useAutosave } from '../context/AutosaveContext';
 
 const DashboardPage = () => {
-  const { getDraftInvoices, deleteDraftInvoice } = useAutosave();
   const [invoices, setInvoices] = useState([]);
-  const [draftInvoices, setDraftInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(null);
@@ -19,17 +16,10 @@ const DashboardPage = () => {
   const [dropdownPosition, setDropdownPosition] = useState('bottom');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
-  const [activeTab, setActiveTab] = useState('invoices'); // 'invoices' or 'drafts'
 
   useEffect(() => {
     fetchInvoices();
-    loadDraftInvoices();
   }, []);
-
-  const loadDraftInvoices = () => {
-    const drafts = getDraftInvoices();
-    setDraftInvoices(drafts);
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -62,16 +52,6 @@ const DashboardPage = () => {
     setShowDeleteModal(true);
   };
 
-  const handleDeleteDraft = (invoiceNumber) => {
-    deleteDraftInvoice(invoiceNumber);
-    loadDraftInvoices(); // Refresh the list
-  };
-
-  const handleContinueDraft = (draftInvoice) => {
-    // Navigate to create invoice page with draft data
-    // This will be handled by passing the draft data as state
-    window.location.href = `/create-invoice?draft=${encodeURIComponent(JSON.stringify(draftInvoice))}`;
-  };
 
   const confirmDelete = async () => {
     if (!invoiceToDelete) return;
@@ -171,31 +151,6 @@ const DashboardPage = () => {
           </Link>
         </div>
 
-        {/* Tabs */}
-        <div className="flex space-x-1 bg-bg-secondary p-1 rounded-lg border border-border-primary">
-          <button
-            onClick={() => setActiveTab('invoices')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-              activeTab === 'invoices'
-                ? 'bg-brand-primary text-white shadow-sm'
-                : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
-            }`}
-          >
-            <FiFileText className="h-4 w-4 inline mr-2" />
-            Invoices ({invoices.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('drafts')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-              activeTab === 'drafts'
-                ? 'bg-brand-primary text-white shadow-sm'
-                : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
-            }`}
-          >
-            <FiClock className="h-4 w-4 inline mr-2" />
-            Drafts ({draftInvoices.length})
-          </button>
-        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -242,12 +197,11 @@ const DashboardPage = () => {
         <div className="card overflow-visible pb-8 min-h-[600px]">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-text-primary transition-colors duration-300">
-              {activeTab === 'invoices' ? 'Recent Invoices' : 'Draft Invoices'}
+              Recent Invoices
             </h2>
           </div>
 
-          {activeTab === 'invoices' ? (
-            invoices.length === 0 ? (
+          {invoices.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-text-secondary mb-4">
                   <FiPlus className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -375,71 +329,6 @@ const DashboardPage = () => {
                 </tbody>
               </table>
             </div>
-          )
-          ) : (
-            // Draft Invoices Section
-            draftInvoices.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-text-secondary mb-4">
-                  <FiClock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No draft invoices</p>
-                  <p className="text-sm">Start creating an invoice to see drafts here</p>
-                </div>
-                <Link to="/create-invoice" className="btn-primary">
-                  Create Invoice
-                </Link>
-              </div>
-            ) : (
-              <div className="overflow-x-auto overflow-y-visible">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="border-b border-border-primary">
-                      <th className="text-left py-4 px-4 text-text-secondary font-medium">Invoice #</th>
-                      <th className="text-left py-4 px-4 text-text-secondary font-medium">Client</th>
-                      <th className="text-left py-4 px-4 text-text-secondary font-medium">Amount</th>
-                      <th className="text-left py-4 px-4 text-text-secondary font-medium">Last Modified</th>
-                      <th className="text-left py-4 px-4 text-text-secondary font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {draftInvoices.map((draft) => (
-                      <tr key={draft.invoiceNumber} className="border-b border-border-primary hover:bg-bg-tertiary transition-colors">
-                        <td className="py-4 px-4 text-text-primary font-medium">
-                          {draft.invoiceNumber}
-                        </td>
-                        <td className="py-4 px-4 text-text-primary">
-                          {draft.receiver?.name || 'No client name'}
-                        </td>
-                        <td className="py-4 px-4 text-text-primary">
-                          {draft.details?.totalAmount || 0} {draft.details?.currency || 'INR'}
-                        </td>
-                        <td className="py-4 px-4 text-text-secondary">
-                          {formatDate(draft.lastModified)}
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => handleContinueDraft(draft)}
-                              className="text-brand-primary hover:text-brand-secondary transition-colors"
-                              title="Continue Editing"
-                            >
-                              <FiEdit className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteDraft(draft.invoiceNumber)}
-                              className="text-state-danger hover:text-opacity-80 transition-colors"
-                              title="Delete Draft"
-                            >
-                              <FiTrash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )
           )}
         </div>
 
