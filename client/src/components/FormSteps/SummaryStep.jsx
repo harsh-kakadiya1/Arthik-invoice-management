@@ -46,6 +46,9 @@ const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
 
   const validationErrors = validateInvoice();
   const draftValidationErrors = validateDraft();
+  
+  // Don't show validation errors if we're saving as draft
+  const shouldShowValidationErrors = validationErrors.length > 0 && !savedAsDraft;
 
   const handleSaveInvoice = async (saveAsDraft = false) => {
     setSaving(true);
@@ -118,7 +121,7 @@ const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
         )}
 
         {/* Validation Errors for Complete Invoice - Only show when not saving as draft */}
-        {validationErrors.length > 0 && !savedAsDraft && (
+        {shouldShowValidationErrors && (
           <div className="bg-red-500 bg-opacity-10 border border-red-500 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
             <h4 className="font-medium mb-2 text-red-700 dark:text-red-300">To save as a complete invoice, please fix these issues:</h4>
             <ul className="list-disc list-inside text-red-600 dark:text-red-400">
@@ -137,8 +140,8 @@ const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-500 bg-opacity-10 border border-red-500 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
-            {error}
+          <div className="bg-red-500 bg-opacity-10 border border-red-500 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-6">
+            <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
           </div>
         )}
 
@@ -285,8 +288,8 @@ const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => handleSaveInvoice(false)}
-                disabled={saving || saved || validationErrors.length > 0}
-                className={`${validationErrors.length > 0 ? 'btn-disabled' : 'btn-primary'} flex items-center justify-center space-x-2 flex-1 min-h-[48px]`}
+                disabled={saving || saved || shouldShowValidationErrors}
+                className={`${shouldShowValidationErrors ? 'btn-disabled' : 'btn-primary'} flex items-center justify-center space-x-2 flex-1 min-h-[48px]`}
               >
                 {saving ? (
                   <>
@@ -329,8 +332,8 @@ const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={handleDownloadPDF}
-                disabled={validationErrors.length > 0}
-                className={`${validationErrors.length > 0 ? 'btn-disabled' : 'btn-outline'} flex items-center justify-center space-x-2 flex-1 min-h-[48px]`}
+                disabled={shouldShowValidationErrors}
+                className={`${shouldShowValidationErrors ? 'btn-disabled' : 'btn-outline'} flex items-center justify-center space-x-2 flex-1 min-h-[48px]`}
               >
                 <FiDownload className="h-4 w-4" />
                 <span>Download PDF</span>
@@ -338,8 +341,8 @@ const SummaryStep = ({ isEditMode = false, invoiceId = null }) => {
 
               <button
                 onClick={handlePreview}
-                disabled={validationErrors.length > 0}
-                className={`${validationErrors.length > 0 ? 'btn-disabled' : 'btn-outline'} flex items-center justify-center space-x-2 flex-1 min-h-[48px]`}
+                disabled={shouldShowValidationErrors}
+                className={`${shouldShowValidationErrors ? 'btn-disabled' : 'btn-outline'} flex items-center justify-center space-x-2 flex-1 min-h-[48px]`}
               >
                 <FiEye className="h-4 w-4" />
                 <span>Preview</span>

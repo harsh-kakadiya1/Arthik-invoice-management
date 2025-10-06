@@ -208,10 +208,14 @@ exports.createInvoice = asyncHandler(async (req, res, next) => {
     if (isDraft) {
       // For drafts, bypass all validation and save as-is
       console.log('=== CREATING DRAFT INVOICE ===');
-      console.log('Using new Invoice() and save() with validateBeforeSave: false');
-      invoice = new Invoice(req.body);
-      console.log('Invoice object created, now saving...');
-      await invoice.save({ validateBeforeSave: false });
+      console.log('Using direct MongoDB insert to bypass all validation');
+      
+      // Use direct MongoDB insertion to completely bypass Mongoose validation
+      const result = await Invoice.collection.insertOne(req.body);
+      console.log('Draft invoice inserted directly into MongoDB:', result.insertedId);
+      
+      // Fetch the created document to return it
+      invoice = await Invoice.findById(result.insertedId);
       console.log('Draft invoice saved successfully!');
     } else {
       // For complete invoices, use full validation
