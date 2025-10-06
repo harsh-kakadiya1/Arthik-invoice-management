@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiPlus, FiEdit, FiTrash2, FiEye, FiDownload, FiChevronDown } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2, FiEye, FiDownload, FiChevronDown, FiSearch } from 'react-icons/fi';
 import MainLayout from '../components/Layout/MainLayout';
+import InvoiceFilters from '../components/InvoiceFilters';
+import InvoiceSort from '../components/InvoiceSort';
 import api from '../lib/api';
 import { formatDate } from '../lib/helpers';
 import { INVOICE_STATUSES } from '../lib/variables';
@@ -9,6 +11,7 @@ import { generatePDF } from '../lib/pdfGenerator';
 
 const DashboardPage = () => {
   const [invoices, setInvoices] = useState([]);
+  const [filteredInvoices, setFilteredInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(null);
@@ -16,10 +19,19 @@ const DashboardPage = () => {
   const [dropdownPosition, setDropdownPosition] = useState('bottom');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+  const [filters, setFilters] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
     fetchInvoices();
   }, []);
+
+  // Update filtered invoices when invoices or filters change
+  useEffect(() => {
+    applyFilters();
+  }, [invoices, filters, searchTerm]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -35,9 +47,24 @@ const DashboardPage = () => {
     };
   }, [showStatusDropdown]);
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = async (filterParams = {}) => {
     try {
-      const response = await api.get('/invoices');
+      setLoading(true);
+      const queryParams = new URLSearchParams();
+      
+      // Add filter parameters to query
+      Object.entries(filterParams).forEach(([key, value]) => {
+        if (value && value !== '') {
+          queryParams.append(key, value);
+        }
+      });
+
+      // Add sorting parameters
+      queryParams.append('sortBy', sortBy);
+      queryParams.append('sortOrder', sortOrder);
+
+      const url = `/invoices${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      const response = await api.get(url);
       setInvoices(response.data.data);
     } catch (error) {
       setError('Failed to fetch invoices');
@@ -45,6 +72,40 @@ const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...invoices];
+
+    // Apply search term filter
+    if (searchTerm) {
+      filtered = filtered.filter(invoice => 
+        invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        invoice.receiver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        invoice.details.totalAmount.toString().includes(searchTerm)
+      );
+    }
+
+    setFilteredInvoices(filtered);
+  };
+
+  const handleFiltersChange = (newFilters) => {
+    setFilters(newFilters);
+    // Fetch invoices with new filters
+    fetchInvoices(newFilters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
+    setSearchTerm('');
+    fetchInvoices();
+  };
+
+  const handleSortChange = (newSortBy, newSortOrder) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    // Refetch with new sorting
+    fetchInvoices(filters);
   };
 
   const handleDeleteClick = (invoice) => {
@@ -156,14 +217,14 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="card">
             <div className="text-center">
-              <div className="text-2xl font-bold text-brand-primary">{invoices.length}</div>
+              <div className="text-2xl font-bold text-brand-primary">{filteredInvoices.length}</div>
               <div className="text-sm text-text-secondary">Total Invoices</div>
             </div>
           </div>
           <div className="card">
             <div className="text-center">
               <div className="text-2xl font-bold text-state-success">
-                {invoices.filter(inv => inv.status === 'paid').length}
+                {filteredInvoices.filter(inv => inv.status === 'paid').length}
               </div>
               <div className="text-sm text-text-secondary">Paid</div>
             </div>
@@ -171,7 +232,7 @@ const DashboardPage = () => {
           <div className="card">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-500">
-                {invoices.filter(inv => inv.status === 'sent').length}
+                {filteredInvoices.filter(inv => inv.status === 'sent').length}
               </div>
               <div className="text-sm text-text-secondary">Sent</div>
             </div>
@@ -179,7 +240,7 @@ const DashboardPage = () => {
           <div className="card">
             <div className="text-center">
               <div className="text-2xl font-bold text-state-danger">
-                {invoices.filter(inv => inv.status === 'overdue').length}
+                {filteredInvoices.filter(inv => inv.status === 'overdue').length}
               </div>
               <div className="text-sm text-text-secondary">Overdue</div>
             </div>
@@ -195,22 +256,67 @@ const DashboardPage = () => {
 
         {/* Invoices/Drafts Table */}
         <div className="card overflow-visible pb-8 min-h-[600px]">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
             <h2 className="text-xl font-semibold text-text-primary transition-colors duration-300">
               Recent Invoices
             </h2>
+            
+            {/* Search, Filters, and Sort */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+              {/* Search Bar */}
+              <div className="relative flex-1 sm:flex-initial">
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-text-secondary" />
+                <input
+                  type="text"
+                  placeholder="Search invoices..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full sm:w-64 pl-10 pr-4 py-2 border border-border-primary rounded-lg bg-bg-primary text-text-primary placeholder-text-secondary focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                />
+              </div>
+              
+              {/* Filters and Sort */}
+              <div className="flex items-center space-x-3">
+                <InvoiceFilters
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                  onClearFilters={handleClearFilters}
+                />
+                
+                <InvoiceSort
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSortChange={handleSortChange}
+                />
+              </div>
+            </div>
           </div>
 
-          {invoices.length === 0 ? (
+
+          {filteredInvoices.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-text-secondary mb-4">
                   <FiPlus className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No invoices yet</p>
-                  <p className="text-sm">Create your first invoice to get started</p>
+                  <p>{invoices.length === 0 ? 'No invoices yet' : 'No invoices match your filters'}</p>
+                  <p className="text-sm">
+                    {invoices.length === 0 
+                      ? 'Create your first invoice to get started' 
+                      : 'Try adjusting your search or filter criteria'
+                    }
+                  </p>
                 </div>
-                <Link to="/create-invoice" className="btn-primary">
-                  Create Invoice
-                </Link>
+                {invoices.length === 0 ? (
+                  <Link to="/create-invoice" className="btn-primary">
+                    Create Invoice
+                  </Link>
+                ) : (
+                  <button
+                    onClick={handleClearFilters}
+                    className="btn-secondary"
+                  >
+                    Clear Filters
+                  </button>
+                )}
               </div>
             ) : (
             <div className="overflow-x-auto overflow-y-visible">
@@ -226,7 +332,7 @@ const DashboardPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {invoices.map((invoice) => (
+                  {filteredInvoices.map((invoice) => (
                     <tr key={invoice._id} className="border-b border-dark-border hover:bg-dark-bg-primary transition-colors">
                       <td className="py-4 px-4 text-light-text-primary font-medium">
                         {invoice.invoiceNumber}
