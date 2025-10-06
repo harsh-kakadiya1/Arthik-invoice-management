@@ -5,9 +5,15 @@ const InvoiceFilters = ({ filters, onFiltersChange, onClearFilters }) => {
   const [showFilters, setShowFilters] = useState(false);
   const [localFilters, setLocalFilters] = useState(filters);
 
+  // Sync local filters with props when they change
+  React.useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
   const handleFilterChange = (key, value) => {
     const newFilters = { ...localFilters, [key]: value };
     setLocalFilters(newFilters);
+    // Immediately apply the filter change
     onFiltersChange(newFilters);
   };
 
@@ -24,17 +30,49 @@ const InvoiceFilters = ({ filters, onFiltersChange, onClearFilters }) => {
   };
 
   const getActiveFiltersCount = () => {
-    return Object.values(filters).filter(value => 
-      value !== '' && value !== null && value !== undefined
-    ).length;
+    const activeFilters = Object.entries(filters).filter(([key, value]) => {
+      if (value === '' || value === null || value === undefined) return false;
+      // Don't count empty strings for text fields
+      if (typeof value === 'string' && value.trim() === '') return false;
+      return true;
+    });
+    return activeFilters.length;
+  };
+
+  const getActiveFilterLabels = () => {
+    const labels = [];
+    
+    // Check payment status filters
+    if (filters.paid === 'true') labels.push('Paid');
+    if (filters.unpaid === 'true') labels.push('Unpaid');
+    if (filters.overdue === 'true') labels.push('Overdue');
+    
+    // Check invoice status filters
+    if (filters.status === 'draft') labels.push('Draft');
+    if (filters.status === 'sent') labels.push('Sent');
+    
+    // Check date range filters
+    if (filters.startDate && filters.endDate) labels.push('Date Range');
+    else if (filters.startDate) labels.push('From Date');
+    else if (filters.endDate) labels.push('To Date');
+    
+    // Check amount range filters
+    if (filters.minAmount && filters.maxAmount) labels.push('Amount Range');
+    else if (filters.minAmount) labels.push(`Min: ${filters.minAmount}`);
+    else if (filters.maxAmount) labels.push(`Max: ${filters.maxAmount}`);
+    
+    // Check text search filters
+    if (filters.clientName && filters.clientName.trim()) labels.push(`Client: ${filters.clientName}`);
+    if (filters.invoiceNumber && filters.invoiceNumber.trim()) labels.push(`Invoice: ${filters.invoiceNumber}`);
+    
+    return labels;
   };
 
   const getQuickFilterLabel = () => {
-    if (filters.paid === 'true') return 'Paid';
-    if (filters.unpaid === 'true') return 'Unpaid';
-    if (filters.overdue === 'true') return 'Overdue';
-    if (filters.status) return filters.status.charAt(0).toUpperCase() + filters.status.slice(1);
-    return null;
+    const labels = getActiveFilterLabels();
+    if (labels.length === 0) return null;
+    if (labels.length === 1) return labels[0];
+    return `${labels.length} filters`;
   };
 
   return (
@@ -54,19 +92,44 @@ const InvoiceFilters = ({ filters, onFiltersChange, onClearFilters }) => {
           )}
         </button>
 
-        {/* Quick Filter Pills */}
-        {getQuickFilterLabel() && (
+        {/* Active Filter Display */}
+        {getActiveFiltersCount() > 0 && (
           <div className="flex items-center space-x-2">
-            <span className="text-text-secondary text-sm">Active:</span>
-            <span className="bg-brand-primary bg-opacity-10 text-brand-primary px-3 py-1 rounded-full text-sm font-medium">
-              {getQuickFilterLabel()}
+            <span className="text-text-secondary text-sm">
+              {getActiveFilterLabels().length === 1 ? 'Active filter:' : 'Active filters:'}
             </span>
-            <button
-              onClick={handleClearFilters}
-              className="text-text-secondary hover:text-text-primary transition-colors"
-            >
-              <FiX className="h-4 w-4" />
-            </button>
+            {getActiveFilterLabels().length === 1 ? (
+              <div className="flex items-center space-x-1 bg-brand-primary bg-opacity-10 border border-brand-primary border-opacity-30 px-3 py-1 rounded-full text-sm font-medium">
+                <span className="text-white">{getQuickFilterLabel() || 'Filter Active'}</span>
+                <button
+                  onClick={handleClearFilters}
+                  className="ml-1 hover:bg-brand-primary hover:bg-opacity-20 rounded-full p-0.5 transition-colors text-white hover:text-gray-200"
+                  title="Clear filter"
+                >
+                  <FiX className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-1">
+                {getActiveFilterLabels().slice(0, 2).map((label, index) => (
+                  <div key={index} className="flex items-center space-x-1 bg-brand-primary bg-opacity-10 border border-brand-primary border-opacity-30 text-white px-2 py-1 rounded-full text-xs font-medium">
+                    <span>{label}</span>
+                  </div>
+                ))}
+                {getActiveFilterLabels().length > 2 && (
+                  <div className="bg-brand-primary bg-opacity-10 border border-brand-primary border-opacity-30 text-white px-2 py-1 rounded-full text-xs font-medium">
+                    +{getActiveFilterLabels().length - 2} more
+                  </div>
+                )}
+                <button
+                  onClick={handleClearFilters}
+                  className="ml-1 hover:bg-brand-primary hover:bg-opacity-20 rounded-full p-0.5 transition-colors text-white hover:text-gray-200"
+                  title="Clear all filters"
+                >
+                  <FiX className="h-3 w-3" />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -92,7 +155,21 @@ const InvoiceFilters = ({ filters, onFiltersChange, onClearFilters }) => {
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => handleFilterChange('paid', localFilters.paid === 'true' ? '' : 'true')}
+                  onClick={() => {
+                    const newFilters = { ...localFilters };
+                    if (localFilters.paid === 'true') {
+                      // If already selected, deselect it
+                      delete newFilters.paid;
+                    } else {
+                      // Select paid and clear other payment filters
+                      newFilters.paid = 'true';
+                      delete newFilters.unpaid;
+                      delete newFilters.overdue;
+                    }
+                    console.log('Paid filter clicked, new filters:', newFilters);
+                    setLocalFilters(newFilters);
+                    onFiltersChange(newFilters);
+                  }}
                   className={`p-3 rounded-lg border text-left transition-colors ${
                     localFilters.paid === 'true'
                       ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
@@ -103,7 +180,20 @@ const InvoiceFilters = ({ filters, onFiltersChange, onClearFilters }) => {
                   <div className="text-xs text-text-secondary">All paid invoices</div>
                 </button>
                 <button
-                  onClick={() => handleFilterChange('unpaid', localFilters.unpaid === 'true' ? '' : 'true')}
+                  onClick={() => {
+                    const newFilters = { ...localFilters };
+                    if (localFilters.unpaid === 'true') {
+                      // If already selected, deselect it
+                      delete newFilters.unpaid;
+                    } else {
+                      // Select unpaid and clear other payment filters
+                      newFilters.unpaid = 'true';
+                      delete newFilters.paid;
+                      delete newFilters.overdue;
+                    }
+                    setLocalFilters(newFilters);
+                    onFiltersChange(newFilters);
+                  }}
                   className={`p-3 rounded-lg border text-left transition-colors ${
                     localFilters.unpaid === 'true'
                       ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300'
@@ -114,7 +204,20 @@ const InvoiceFilters = ({ filters, onFiltersChange, onClearFilters }) => {
                   <div className="text-xs text-text-secondary">Draft, sent, overdue</div>
                 </button>
                 <button
-                  onClick={() => handleFilterChange('overdue', localFilters.overdue === 'true' ? '' : 'true')}
+                  onClick={() => {
+                    const newFilters = { ...localFilters };
+                    if (localFilters.overdue === 'true') {
+                      // If already selected, deselect it
+                      delete newFilters.overdue;
+                    } else {
+                      // Select overdue and clear other payment filters
+                      newFilters.overdue = 'true';
+                      delete newFilters.paid;
+                      delete newFilters.unpaid;
+                    }
+                    setLocalFilters(newFilters);
+                    onFiltersChange(newFilters);
+                  }}
                   className={`p-3 rounded-lg border text-left transition-colors ${
                     localFilters.overdue === 'true'
                       ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'

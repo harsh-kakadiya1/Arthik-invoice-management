@@ -8,10 +8,7 @@ const Invoice = require('../models/Invoice');
 exports.getInvoices = asyncHandler(async (req, res, next) => {
   let query = { user: req.user.id };
 
-  // Filter by status
-  if (req.query.status) {
-    query.status = req.query.status;
-  }
+  // Note: Status filtering is handled later in the payment status section
 
   // Filter by date range
   if (req.query.startDate || req.query.endDate) {
@@ -56,20 +53,25 @@ exports.getInvoices = asyncHandler(async (req, res, next) => {
     query.invoiceNumber = { $regex: req.query.invoiceNumber, $options: 'i' };
   }
 
+  // Filter paid invoices (highest priority)
+  if (req.query.paid === 'true') {
+    console.log('Setting paid filter - before:', query);
+    query.status = 'paid';
+    console.log('Setting paid filter - after:', query);
+    console.log('Paid filter applied - query.status should be "paid":', query.status);
+  }
+  // Filter unpaid invoices
+  else if (req.query.unpaid === 'true') {
+    query.status = { $in: ['draft', 'sent', 'overdue'] };
+  }
   // Filter overdue invoices
-  if (req.query.overdue === 'true') {
+  else if (req.query.overdue === 'true') {
     query['details.dueDate'] = { $lt: new Date() };
     query.status = { $ne: 'paid' };
   }
-
-  // Filter paid invoices
-  if (req.query.paid === 'true') {
-    query.status = 'paid';
-  }
-
-  // Filter unpaid invoices
-  if (req.query.unpaid === 'true') {
-    query.status = { $in: ['draft', 'sent', 'overdue'] };
+  // Filter by specific status (draft, sent, etc.)
+  else if (req.query.status) {
+    query.status = req.query.status;
   }
 
   // Sort options
@@ -99,7 +101,11 @@ exports.getInvoices = asyncHandler(async (req, res, next) => {
     }
   }
 
+  console.log('Query being executed:', JSON.stringify(query, null, 2));
+  console.log('Sort options:', JSON.stringify(sortBy, null, 2));
   const invoices = await Invoice.find(query).sort(sortBy);
+  console.log('Found invoices:', invoices.length);
+  console.log('Invoice statuses found:', invoices.map(inv => ({ id: inv._id, status: inv.status, number: inv.invoiceNumber })));
 
   res.status(200).json({
     success: true,
@@ -136,52 +142,103 @@ exports.createInvoice = asyncHandler(async (req, res, next) => {
   // Add user to req.body
   req.body.user = req.user.id;
 
-  // Calculate totals
-  const { items, discountDetails, gstDetails, shippingDetails } = req.body.details;
-  
-  // Calculate subtotal
-  let subTotal = 0;
-  items.forEach(item => {
-    item.total = item.quantity * item.unitPrice;
-    subTotal += item.total;
-  });
+  // Check if this is a draft invoice
+  const isDraft = req.body.status === 'draft';
+  console.log('Creating invoice - isDraft:', isDraft, 'status:', req.body.status);
+  console.log('Request body items:', req.body.details?.items);
+  console.log('Request body sender:', req.body.sender);
 
-  req.body.details.subTotal = subTotal;
+  // For draft invoices, save as-is without any validation or default values
+  if (isDraft) {
+    console.log('=== DRAFT MODE ===');
+    console.log('Saving draft invoice as-is without validation');
+    console.log('Draft data received:', {
+      sender: req.body.sender,
+      receiver: req.body.receiver,
+      invoiceNumber: req.body.invoiceNumber,
+      items: req.body.details?.items,
+      status: req.body.status
+    });
+    console.log('=== END DRAFT MODE ===');
+  } else {
+    // For complete invoices, use the existing logic
+    const { items, discountDetails, gstDetails, shippingDetails } = req.body.details;
+    
+    // Calculate subtotal
+    let subTotal = 0;
+    items.forEach(item => {
+      item.total = item.quantity * item.unitPrice;
+      subTotal += item.total;
+    });
 
-  // Calculate total amount
-  let totalAmount = subTotal;
+    req.body.details.subTotal = subTotal;
 
-  // Apply discount
-  if (discountDetails && discountDetails.amount > 0) {
-    if (discountDetails.amountType === 'percentage') {
-      totalAmount -= (totalAmount * discountDetails.amount) / 100;
-    } else {
-      totalAmount -= discountDetails.amount;
+    // Calculate total amount
+    let totalAmount = subTotal;
+
+    // Apply discount
+    if (discountDetails && discountDetails.amount > 0) {
+      if (discountDetails.amountType === 'percentage') {
+        totalAmount -= (totalAmount * discountDetails.amount) / 100;
+      } else {
+        totalAmount -= discountDetails.amount;
+      }
     }
-  }
 
-  // Apply GST (only for exclusive)
-  if (gstDetails && gstDetails.rate > 0 && !gstDetails.inclusive) {
-    totalAmount += (totalAmount * gstDetails.rate) / 100;
-  }
-
-  // Apply shipping
-  if (shippingDetails && shippingDetails.cost > 0) {
-    if (shippingDetails.costType === 'percentage') {
-      totalAmount += (totalAmount * shippingDetails.cost) / 100;
-    } else {
-      totalAmount += shippingDetails.cost;
+    // Apply GST (only for exclusive)
+    if (gstDetails && gstDetails.rate > 0 && !gstDetails.inclusive) {
+      totalAmount += (totalAmount * gstDetails.rate) / 100;
     }
+
+    // Apply shipping
+    if (shippingDetails && shippingDetails.cost > 0) {
+      if (shippingDetails.costType === 'percentage') {
+        totalAmount += (totalAmount * shippingDetails.cost) / 100;
+      } else {
+        totalAmount += shippingDetails.cost;
+      }
+    }
+
+    req.body.details.totalAmount = Math.round(totalAmount * 100) / 100;
   }
 
-  req.body.details.totalAmount = Math.round(totalAmount * 100) / 100;
+  try {
+    let invoice;
+    
+    if (isDraft) {
+      // For drafts, bypass all validation and save as-is
+      console.log('=== CREATING DRAFT INVOICE ===');
+      console.log('Using new Invoice() and save() with validateBeforeSave: false');
+      invoice = new Invoice(req.body);
+      console.log('Invoice object created, now saving...');
+      await invoice.save({ validateBeforeSave: false });
+      console.log('Draft invoice saved successfully!');
+    } else {
+      // For complete invoices, use full validation
+      console.log('Creating complete invoice with full validation');
+      invoice = await Invoice.create(req.body);
+    }
+    
+    console.log('Invoice created successfully:', {
+      id: invoice._id,
+      status: invoice.status,
+      invoiceNumber: invoice.invoiceNumber
+    });
 
-  const invoice = await Invoice.create(req.body);
-
-  res.status(201).json({
-    success: true,
-    data: invoice
-  });
+    res.status(201).json({
+      success: true,
+      data: invoice
+    });
+  } catch (error) {
+    console.error('Error creating invoice:', error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        error: error.message
+      });
+    }
+    throw error;
+  }
 });
 
 // @desc    Update invoice
@@ -201,39 +258,50 @@ exports.updateInvoice = asyncHandler(async (req, res, next) => {
 
   // Recalculate totals if items are being updated
   if (req.body.details && req.body.details.items) {
+    const isDraft = req.body.status === 'draft' || invoice.status === 'draft';
     const { items, discountDetails, gstDetails, shippingDetails } = req.body.details;
     
     let subTotal = 0;
     items.forEach(item => {
-      item.total = item.quantity * item.unitPrice;
-      subTotal += item.total;
+      if (isDraft && (!item.quantity || !item.unitPrice)) {
+        item.total = 0;
+      } else {
+        item.total = item.quantity * item.unitPrice;
+        subTotal += item.total;
+      }
     });
 
     req.body.details.subTotal = subTotal;
 
-    let totalAmount = subTotal;
+    if (isDraft) {
+      // For drafts, just use subtotal
+      req.body.details.totalAmount = subTotal;
+    } else {
+      // For complete invoices, apply all calculations
+      let totalAmount = subTotal;
 
-    if (discountDetails && discountDetails.amount > 0) {
-      if (discountDetails.amountType === 'percentage') {
-        totalAmount -= (totalAmount * discountDetails.amount) / 100;
-      } else {
-        totalAmount -= discountDetails.amount;
+      if (discountDetails && discountDetails.amount > 0) {
+        if (discountDetails.amountType === 'percentage') {
+          totalAmount -= (totalAmount * discountDetails.amount) / 100;
+        } else {
+          totalAmount -= discountDetails.amount;
+        }
       }
-    }
 
-    if (gstDetails && gstDetails.rate > 0 && !gstDetails.inclusive) {
-      totalAmount += (totalAmount * gstDetails.rate) / 100;
-    }
-
-    if (shippingDetails && shippingDetails.cost > 0) {
-      if (shippingDetails.costType === 'percentage') {
-        totalAmount += (totalAmount * shippingDetails.cost) / 100;
-      } else {
-        totalAmount += shippingDetails.cost;
+      if (gstDetails && gstDetails.rate > 0 && !gstDetails.inclusive) {
+        totalAmount += (totalAmount * gstDetails.rate) / 100;
       }
-    }
 
-    req.body.details.totalAmount = Math.round(totalAmount * 100) / 100;
+      if (shippingDetails && shippingDetails.cost > 0) {
+        if (shippingDetails.costType === 'percentage') {
+          totalAmount += (totalAmount * shippingDetails.cost) / 100;
+        } else {
+          totalAmount += shippingDetails.cost;
+        }
+      }
+
+      req.body.details.totalAmount = Math.round(totalAmount * 100) / 100;
+    }
   }
 
   invoice = await Invoice.findByIdAndUpdate(req.params.id, req.body, {

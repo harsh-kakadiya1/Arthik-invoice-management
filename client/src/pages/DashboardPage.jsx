@@ -64,7 +64,10 @@ const DashboardPage = () => {
       queryParams.append('sortOrder', sortOrder);
 
       const url = `/invoices${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      console.log('Frontend: Calling API with URL:', url);
+      console.log('Frontend: Query params:', queryParams.toString());
       const response = await api.get(url);
+      console.log('Frontend: Received invoices:', response.data.data.length);
       setInvoices(response.data.data);
     } catch (error) {
       setError('Failed to fetch invoices');
@@ -77,7 +80,7 @@ const DashboardPage = () => {
   const applyFilters = () => {
     let filtered = [...invoices];
 
-    // Apply search term filter
+    // Apply search term filter (only if we have invoices from backend)
     if (searchTerm) {
       filtered = filtered.filter(invoice => 
         invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -86,6 +89,8 @@ const DashboardPage = () => {
       );
     }
 
+    // The backend already applies the main filters (paid, unpaid, overdue, status, etc.)
+    // So we don't need to apply them again here
     setFilteredInvoices(filtered);
   };
 

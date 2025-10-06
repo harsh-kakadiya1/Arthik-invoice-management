@@ -200,6 +200,18 @@ const CreateInvoicePage = ({ isEditMode = false, invoiceId = null }) => {
                 <FiArrowLeft className="h-4 w-4" />
                 <span>Back</span>
               </button>
+              {!isEditMode && (
+                <button
+                  onClick={() => {
+                    // Navigate to summary step to save as draft
+                    setCurrentStep(4);
+                  }}
+                  className="btn-outline flex items-center space-x-2"
+                >
+                  <FiSave className="h-4 w-4" />
+                  <span>Save as Draft</span>
+                </button>
+              )}
               {isEditMode && (
                 <button
                   onClick={() => {
