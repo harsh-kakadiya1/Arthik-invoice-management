@@ -11,6 +11,7 @@ import NavigationWrapper from './components/NavigationWrapper'
 import ProtectedRoute from './components/Layout/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import LandingPage from './pages/LandingPage'
 import DashboardPage from './pages/DashboardPage'
 import CreateInvoicePage from './pages/CreateInvoicePage'
 import InvoiceViewPage from './pages/InvoiceViewPage'
@@ -21,6 +22,10 @@ import './index.css'
 
 const router = createBrowserRouter([
   {
+    path: '/',
+    element: <LandingPage />
+  },
+  {
     path: '/login',
     element: <LoginPage />
   },
@@ -29,7 +34,7 @@ const router = createBrowserRouter([
     element: <RegisterPage />
   },
   {
-    path: '/',
+    path: '/dashboard',
     element: (
       <ProtectedRoute>
         <DashboardPage />

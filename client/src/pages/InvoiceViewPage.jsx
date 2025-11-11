@@ -100,7 +100,7 @@ const InvoiceViewPage = () => {
           <div className="text-center">
             <h1 className="text-2xl font-bold text-light-text-primary mb-4">Invoice Not Found</h1>
             <p className="text-light-text-secondary mb-6">{error || 'The invoice you are looking for does not exist.'}</p>
-            <Link to="/" className="btn-primary">
+            <Link to="/dashboard" className="btn-primary">
               Back to Dashboard
             </Link>
           </div>
@@ -122,7 +122,7 @@ const InvoiceViewPage = () => {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <Link
-              to="/"
+              to="/dashboard"
               className="text-light-text-secondary hover:text-light-text-primary transition-colors"
             >
               <FiArrowLeft className="h-5 w-5" />

@@ -16,7 +16,7 @@ const Header = () => {
   };
 
   const navItems = [
-    { path: '/', label: 'Dashboard', icon: FiHome },
+    { path: '/dashboard', label: 'Dashboard', icon: FiHome },
     { path: '/create-invoice', label: 'Create Invoice', icon: FiFileText },
     { path: '/clients', label: 'Clients', icon: FiUsers },
     { path: '/profile', label: 'Profile', icon: FiSettings }
@@ -28,7 +28,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
           <button 
-            onClick={() => navigateWithWarning(navigate, '/')}
+            onClick={() => navigateWithWarning(navigate, '/dashboard')}
             className="flex items-center hover:opacity-80 transition-opacity"
           >
             <img 
