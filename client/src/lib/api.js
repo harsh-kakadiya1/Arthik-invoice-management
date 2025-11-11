@@ -32,7 +32,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Don't force redirect here - let React Router handle it
+      // The AuthContext will detect the missing token and handle navigation
     }
     return Promise.reject(error);
   }

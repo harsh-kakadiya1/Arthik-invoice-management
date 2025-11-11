@@ -109,13 +109,11 @@ const InvoiceTemplate2 = ({ data }) => {
                                     </span>
                                 </div>
                             )}
-                            {details.taxDetails?.amount > 0 && (
+                            {details.gstDetails?.rate > 0 && (
                                 <div className="flex justify-between py-2">
-                                    <span className="text-gray-600">Tax:</span>
+                                    <span className="text-gray-600">GST {details.gstDetails.rate}% ({details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'}):</span>
                                     <span className="font-medium text-gray-900">
-                                        {details.taxDetails.amountType === "amount"
-                                            ? `+ ${details.taxDetails.amount} ${details.currency}`
-                                            : `+ ${details.taxDetails.amount}%`}
+                                        + {details.gstDetails.rate}%
                                     </span>
                                 </div>
                             )}

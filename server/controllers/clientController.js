@@ -110,7 +110,7 @@ exports.deleteClient = asyncHandler(async (req, res, next) => {
 exports.searchClients = asyncHandler(async (req, res, next) => {
   const { q } = req.query;
 
-  if (!q || q.trim().length < 2) {
+  if (!q || q.trim().length < 1) {
     return res.status(200).json({
       success: true,
       count: 0,

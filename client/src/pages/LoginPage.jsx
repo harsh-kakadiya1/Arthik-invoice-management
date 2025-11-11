@@ -26,7 +26,7 @@ const LoginPage = () => {
     const result = await login(data.email, data.password);
     
     if (result.success) {
-      navigate('/');
+      navigate('/dashboard');
     } else {
       setError(result.error);
     }
@@ -59,7 +59,7 @@ const LoginPage = () => {
         <div className="card">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {error && (
-              <div className="bg-state-danger bg-opacity-10 border border-state-danger text-state-danger px-4 py-3 rounded-lg text-sm">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm font-medium">
                 {error}
               </div>
             )}

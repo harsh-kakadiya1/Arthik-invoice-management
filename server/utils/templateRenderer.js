@@ -40,7 +40,6 @@ const renderTemplate1 = ({ sender, receiver, details }) => {
     <div class="grid grid-cols-3 grid-cols-5 gap-y-1">
       <div class="col-span-full col-span-2 border-b border-gray-300">
         <p class="font-medium text-gray-800">${item.name}</p>
-        <p class="text-xs text-gray-600">${item.description || ''}</p>
       </div>
       <div class="border-b border-gray-300">
         <p class="text-gray-800">${item.quantity}</p>
@@ -126,13 +125,11 @@ const renderTemplate1 = ({ sender, receiver, details }) => {
                 </dd>
               </dl>
             ` : ''}
-            ${details.taxDetails?.amount > 0 ? `
+            ${details.gstDetails?.rate > 0 ? `
               <dl class="grid grid-cols-5 gap-x-3">
-                <dt class="col-span-3 font-semibold text-gray-800">Tax:</dt>
+                <dt class="col-span-3 font-semibold text-gray-800">GST ${details.gstDetails.rate}% (${details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'}):</dt>
                 <dd class="col-span-2 text-gray-500">
-                  ${details.taxDetails.amountType === "amount"
-                    ? `+ ${formatNumberWithCommas(details.taxDetails.amount)} ${details.currency}`
-                    : `+ ${details.taxDetails.amount}%`}
+                  + ${formatNumberWithCommas(details.gstDetails.rate)}%
                 </dd>
               </dl>
             ` : ''}
@@ -218,7 +215,6 @@ const renderTemplate4 = ({ sender, receiver, details }) => {
     <tr class="items-row">
       <td class="item-description">
         <div class="font-medium text-gray-800">${item.name}</div>
-        <div class="text-xs text-gray-500">${item.description || ''}</div>
       </td>
       <td class="item-quantity text-center">${item.quantity}</td>
       <td class="item-rate text-right">${formatNumberWithCommas(item.unitPrice)} ${details.currency}</td>
@@ -316,13 +312,11 @@ const renderTemplate4 = ({ sender, receiver, details }) => {
                   </span>
                 </div>
               ` : ''}
-              ${details.taxDetails?.amount > 0 ? `
+              ${details.gstDetails?.rate > 0 ? `
                 <div class="totals-row">
-                  <span class="total-label">Tax:</span>
+                  <span class="total-label">GST ${details.gstDetails.rate}% (${details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'}):</span>
                   <span class="total-value">
-                    ${details.taxDetails.amountType === "amount"
-                      ? `+ ${formatNumberWithCommas(details.taxDetails.amount)} ${details.currency}`
-                      : `+ ${details.taxDetails.amount}%`}
+                    + ${formatNumberWithCommas(details.gstDetails.rate)}%
                   </span>
                 </div>
               ` : ''}
@@ -391,19 +385,345 @@ const renderTemplate4 = ({ sender, receiver, details }) => {
 };
 
 /**
- * Template 2 - Clean Layout (placeholder - you can implement based on your template)
+ * Template 2 - Clean Layout
  */
-const renderTemplate2 = (invoiceData) => {
-  // You can implement this similar to template 1 but with template 2 styles
-  return renderTemplate1(invoiceData); // Fallback to template 1 for now
+const renderTemplate2 = ({ sender, receiver, details }) => {
+  const itemsHTML = details.items.map(item => `
+    <tr class="border-b border-gray-100">
+      <td class="py-4">
+        <div>
+          <p class="font-medium text-gray-900">${item.name}</p>
+        </div>
+      </td>
+      <td class="py-4 text-right text-gray-900">${item.quantity}</td>
+      <td class="py-4 text-right text-gray-900">${formatNumberWithCommas(item.unitPrice)} ${details.currency}</td>
+      <td class="py-4 text-right font-medium text-gray-900">${formatNumberWithCommas(item.total)} ${details.currency}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <div class="min-h-800 bg-white">
+      <!-- Header -->
+      <div class="border-b-2 border-gray-200 pb-6 mb-6">
+        <div class="flex justify-between items-start">
+          <div>
+            ${details.invoiceLogo ? `
+              <img src="${details.invoiceLogo}" width="120" height="80" alt="Logo of ${sender.name}" class="mb-3" />
+            ` : ''}
+            <h1 class="text-2xl font-bold text-gray-900">${sender.name}</h1>
+          </div>
+          <div class="text-right">
+            <h2 class="text-3xl font-light text-gray-700 mb-2">INVOICE</h2>
+            <div class="text-sm text-gray-600">
+              <p><span class="font-medium">Invoice #:</span> ${details.invoiceNumber}</p>
+              <p><span class="font-medium">Date:</span> ${new Date(details.invoiceDate).toLocaleDateString("en-US")}</p>
+              <p><span class="font-medium">Due:</span> ${new Date(details.dueDate).toLocaleDateString("en-US")}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- From/To Section -->
+      <div class="grid grid-cols-2 gap-8 mb-8">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">From</h3>
+          <div class="text-gray-900">
+            <p class="font-medium">${sender.name}</p>
+            <p class="text-sm text-gray-600">${sender.address}</p>
+            <p class="text-sm text-gray-600">${sender.city}, ${sender.zipCode}</p>
+            <p class="text-sm text-gray-600">${sender.country}</p>
+            <p class="text-sm text-gray-600 mt-2">${sender.email}</p>
+            <p class="text-sm text-gray-600">${sender.phone}</p>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Bill To</h3>
+          <div class="text-gray-900">
+            <p class="font-medium">${receiver.name}</p>
+            <p class="text-sm text-gray-600">${receiver.address}</p>
+            <p class="text-sm text-gray-600">${receiver.city}, ${receiver.zipCode}</p>
+            <p class="text-sm text-gray-600">${receiver.country}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items Table -->
+      <div class="mb-8">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-3 text-sm font-medium text-gray-500 uppercase tracking-wide">Description</th>
+              <th class="text-right py-3 text-sm font-medium text-gray-500 uppercase tracking-wide w-20">Qty</th>
+              <th class="text-right py-3 text-sm font-medium text-gray-500 uppercase tracking-wide w-24">Rate</th>
+              <th class="text-right py-3 text-sm font-medium text-gray-500 uppercase tracking-wide w-24">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHTML}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Totals -->
+      <div class="flex justify-end mb-8">
+        <div class="w-64">
+          <div class="space-y-2">
+            <div class="flex justify-between py-2">
+              <span class="text-gray-600">Subtotal:</span>
+              <span class="font-medium text-gray-900">${formatNumberWithCommas(Number(details.subTotal))} ${details.currency}</span>
+            </div>
+            ${details.discountDetails?.amount > 0 ? `
+              <div class="flex justify-between py-2">
+                <span class="text-gray-600">Discount:</span>
+                <span class="font-medium text-gray-900">
+                  ${details.discountDetails.amountType === "amount"
+                    ? `- ${formatNumberWithCommas(details.discountDetails.amount)} ${details.currency}`
+                    : `- ${details.discountDetails.amount}%`}
+                </span>
+              </div>
+            ` : ''}
+            ${details.gstDetails?.rate > 0 ? `
+              <div class="flex justify-between py-2">
+                <span class="text-gray-600">GST ${details.gstDetails.rate}% (${details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'}):</span>
+                <span class="font-medium text-gray-900">+ ${formatNumberWithCommas(details.gstDetails.rate)}%</span>
+              </div>
+            ` : ''}
+            ${details.shippingDetails?.cost > 0 ? `
+              <div class="flex justify-between py-2">
+                <span class="text-gray-600">Shipping:</span>
+                <span class="font-medium text-gray-900">
+                  ${details.shippingDetails.costType === "amount"
+                    ? `+ ${formatNumberWithCommas(details.shippingDetails.cost)} ${details.currency}`
+                    : `+ ${details.shippingDetails.cost}%`}
+                </span>
+              </div>
+            ` : ''}
+            <div class="border-t border-gray-200 pt-2">
+              <div class="flex justify-between py-2">
+                <span class="text-lg font-semibold text-gray-900">Total:</span>
+                <span class="text-lg font-bold text-gray-900">${formatNumberWithCommas(Number(details.totalAmount))} ${details.currency}</span>
+              </div>
+              ${details.totalAmountInWords ? `
+                <p class="text-sm text-gray-600 italic mt-1">(${details.totalAmountInWords} ${details.currency})</p>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="border-t border-gray-200 pt-6">
+        ${details.additionalNotes ? `
+          <div class="mb-4">
+            <p class="font-semibold text-gray-800">Notes:</p>
+            <p class="text-sm text-gray-600">${details.additionalNotes}</p>
+          </div>
+        ` : ''}
+        ${details.paymentTerms ? `
+          <div class="mb-4">
+            <p class="font-semibold text-gray-800">Payment Terms:</p>
+            <p class="text-sm text-gray-600">${details.paymentTerms}</p>
+          </div>
+        ` : ''}
+        ${details.paymentInformation?.bankName ? `
+          <div class="mb-4">
+            <p class="font-semibold text-gray-800">Payment Information:</p>
+            <div class="text-sm text-gray-600">
+              <p>Bank: ${details.paymentInformation.bankName}</p>
+              <p>Account Name: ${details.paymentInformation.accountName}</p>
+              <p>Account Number: ${details.paymentInformation.accountNumber}</p>
+            </div>
+          </div>
+        ` : ''}
+        ${details?.signature?.data ? `
+          <div class="mt-6">
+            <p class="font-semibold text-gray-800 mb-1">Signature:</p>
+            ${isDataUrl(details.signature.data) ? `
+              <img src="${details.signature.data}" width="120" height="60" alt="Signature of ${sender.name}" style="max-width: 120px; height: auto;" />
+            ` : `
+              <p class="signature-font" style="font-size: 30px; font-weight: 400; color: black; font-family: '${details.signature.fontFamily || 'cursive'}', cursive;">
+                ${details.signature.data}
+              </p>
+            `}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
 };
 
 /**
- * Template 3 - Boxed Layout (placeholder - you can implement based on your template)
+ * Template 3 - Boxed Layout
  */
-const renderTemplate3 = (invoiceData) => {
-  // You can implement this similar to template 1 but with template 3 styles
-  return renderTemplate1(invoiceData); // Fallback to template 1 for now
+const renderTemplate3 = ({ sender, receiver, details }) => {
+  const itemsHTML = details.items.map((item, index) => `
+    <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+      <td class="py-4 px-4">
+        <div>
+          <p class="font-medium text-gray-900">${item.name}</p>
+        </div>
+      </td>
+      <td class="py-4 px-4 text-center text-gray-900">${item.quantity}</td>
+      <td class="py-4 px-4 text-right text-gray-900">${formatNumberWithCommas(item.unitPrice)} ${details.currency}</td>
+      <td class="py-4 px-4 text-right font-semibold text-gray-900">${formatNumberWithCommas(item.total)} ${details.currency}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <div class="min-h-800 bg-white">
+      <!-- Header with Company Info -->
+      <div class="bg-gray-50 p-6 mb-6 rounded-lg">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center space-x-4">
+            ${details.invoiceLogo ? `
+              <img src="${details.invoiceLogo}" width="80" height="80" alt="Logo of ${sender.name}" class="rounded-lg" />
+            ` : ''}
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900">${sender.name}</h1>
+              <div class="text-sm text-gray-600 mt-1">
+                <p>${sender.address}</p>
+                <p>${sender.city}, ${sender.zipCode}, ${sender.country}</p>
+                <p>${sender.email} | ${sender.phone}</p>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="bg-blue-600 text-white px-4 py-2 rounded-lg inline-block">
+              <h2 class="text-xl font-bold">INVOICE</h2>
+            </div>
+            <div class="mt-3 text-sm">
+              <p class="font-semibold text-gray-900">#${details.invoiceNumber}</p>
+              <p class="text-gray-600">Date: ${new Date(details.invoiceDate).toLocaleDateString("en-US")}</p>
+              <p class="text-gray-600">Due: ${new Date(details.dueDate).toLocaleDateString("en-US")}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bill To Section -->
+      <div class="mb-8">
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-blue-800 mb-3">Bill To:</h3>
+          <div class="text-gray-900">
+            <p class="font-semibold text-lg">${receiver.name}</p>
+            <div class="text-sm text-gray-600 mt-1">
+              <p>${receiver.address}</p>
+              <p>${receiver.city}, ${receiver.zipCode}</p>
+              <p>${receiver.country}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items Section -->
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Items & Services</h3>
+        <div class="border border-gray-200 rounded-lg overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">Description</th>
+                <th class="text-center py-3 px-4 font-semibold text-gray-700 w-20">Qty</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700 w-24">Rate</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700 w-28">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHTML}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Summary Section -->
+      <div class="flex justify-end mb-8">
+        <div class="w-80">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Summary</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Subtotal:</span>
+                <span class="font-medium text-gray-900">${formatNumberWithCommas(Number(details.subTotal))} ${details.currency}</span>
+              </div>
+              ${details.discountDetails?.amount > 0 ? `
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Discount:</span>
+                  <span class="font-medium text-red-600">
+                    ${details.discountDetails.amountType === "amount"
+                      ? `- ${formatNumberWithCommas(details.discountDetails.amount)} ${details.currency}`
+                      : `- ${details.discountDetails.amount}%`}
+                  </span>
+                </div>
+              ` : ''}
+              ${details.gstDetails?.rate > 0 ? `
+                <div class="flex justify-between">
+                  <span class="text-gray-600">GST ${details.gstDetails.rate}% (${details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'}):</span>
+                  <span class="font-medium text-gray-900">+ ${formatNumberWithCommas(details.gstDetails.rate)}%</span>
+                </div>
+              ` : ''}
+              ${details.shippingDetails?.cost > 0 ? `
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Shipping:</span>
+                  <span class="font-medium text-gray-900">
+                    ${details.shippingDetails.costType === "amount"
+                      ? `+ ${formatNumberWithCommas(details.shippingDetails.cost)} ${details.currency}`
+                      : `+ ${details.shippingDetails.cost}%`}
+                  </span>
+                </div>
+              ` : ''}
+              <div class="border-t border-gray-300 pt-3">
+                <div class="flex justify-between">
+                  <span class="text-xl font-bold text-gray-900">Total:</span>
+                  <span class="text-xl font-bold text-blue-600">${formatNumberWithCommas(Number(details.totalAmount))} ${details.currency}</span>
+                </div>
+                ${details.totalAmountInWords ? `
+                  <p class="text-sm text-gray-600 italic mt-2">(${details.totalAmountInWords} ${details.currency})</p>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="border-t border-gray-200 pt-6">
+        ${details.additionalNotes ? `
+          <div class="mb-4">
+            <p class="font-semibold text-gray-800">Notes:</p>
+            <p class="text-sm text-gray-600">${details.additionalNotes}</p>
+          </div>
+        ` : ''}
+        ${details.paymentTerms ? `
+          <div class="mb-4">
+            <p class="font-semibold text-gray-800">Payment Terms:</p>
+            <p class="text-sm text-gray-600">${details.paymentTerms}</p>
+          </div>
+        ` : ''}
+        ${details.paymentInformation?.bankName ? `
+          <div class="mb-4">
+            <p class="font-semibold text-gray-800">Payment Information:</p>
+            <div class="text-sm text-gray-600">
+              <p>Bank: ${details.paymentInformation.bankName}</p>
+              <p>Account Name: ${details.paymentInformation.accountName}</p>
+              <p>Account Number: ${details.paymentInformation.accountNumber}</p>
+            </div>
+          </div>
+        ` : ''}
+        ${details?.signature?.data ? `
+          <div class="mt-6">
+            <p class="font-semibold text-gray-800 mb-1">Signature:</p>
+            ${isDataUrl(details.signature.data) ? `
+              <img src="${details.signature.data}" width="120" height="60" alt="Signature of ${sender.name}" style="max-width: 120px; height: auto;" />
+            ` : `
+              <p class="signature-font" style="font-size: 30px; font-weight: 400; color: black; font-family: '${details.signature.fontFamily || 'cursive'}', cursive;">
+                ${details.signature.data}
+              </p>
+            `}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
 };
 
 module.exports = {

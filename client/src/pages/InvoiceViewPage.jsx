@@ -100,7 +100,7 @@ const InvoiceViewPage = () => {
           <div className="text-center">
             <h1 className="text-2xl font-bold text-light-text-primary mb-4">Invoice Not Found</h1>
             <p className="text-light-text-secondary mb-6">{error || 'The invoice you are looking for does not exist.'}</p>
-            <Link to="/" className="btn-primary">
+            <Link to="/dashboard" className="btn-primary">
               Back to Dashboard
             </Link>
           </div>
@@ -110,16 +110,8 @@ const InvoiceViewPage = () => {
   }
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'paid':
-        return 'text-state-success';
-      case 'sent':
-        return 'text-blue-500';
-      case 'overdue':
-        return 'text-state-danger';
-      default:
-        return 'text-light-text-secondary';
-    }
+    const statusObj = INVOICE_STATUSES.find(s => s.value === status);
+    return statusObj ? statusObj.color : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
   };
 
   return (
@@ -130,7 +122,7 @@ const InvoiceViewPage = () => {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <Link
-              to="/"
+              to="/dashboard"
               className="text-light-text-secondary hover:text-light-text-primary transition-colors"
             >
               <FiArrowLeft className="h-5 w-5" />
@@ -154,8 +146,8 @@ const InvoiceViewPage = () => {
                     <button
                       key={status.value}
                       onClick={() => handleStatusUpdate(status.value)}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-dark-bg-primary transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                        invoice.status === status.value ? 'bg-brand-teal bg-opacity-10 text-brand-teal' : 'text-light-text-primary'
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                        invoice.status === status.value ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 font-medium' : 'text-gray-700 dark:text-gray-300'
                       }`}
                     >
                       {status.label}
@@ -297,12 +289,11 @@ const InvoiceViewPage = () => {
                 </div>
               )}
               
-              {invoice.details.taxDetails?.amount > 0 && (
+              {invoice.details.gstDetails?.rate > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-light-text-secondary">Tax:</span>
+                  <span className="text-light-text-secondary">GST:</span>
                   <span className="text-light-text-primary">
-                    {invoice.details.taxDetails.amount}
-                    {invoice.details.taxDetails.amountType === 'percentage' ? '%' : ` ${invoice.details.currency}`}
+                    {invoice.details.gstDetails.rate}% ({invoice.details.gstDetails.inclusive ? 'Inclusive' : 'Exclusive'})
                   </span>
                 </div>
               )}

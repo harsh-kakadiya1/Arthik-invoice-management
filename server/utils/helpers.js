@@ -105,8 +105,8 @@ const validateInvoiceData = (invoiceData) => {
 };
 
 // Convert currency format
-const formatCurrency = (amount, currency = 'USD') => {
-  const formatter = new Intl.NumberFormat('en-US', {
+const formatCurrency = (amount, currency = 'INR') => {
+  const formatter = new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: currency,
   });

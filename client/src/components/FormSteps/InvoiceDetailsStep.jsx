@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useInvoice } from '../../context/InvoiceContext';
+import { useAuth } from '../../context/AuthContext';
 import { CURRENCY_OPTIONS, INVOICE_TEMPLATES } from '../../lib/variables';
-import { FiCalendar, FiHash, FiDollarSign } from 'react-icons/fi';
+import { FiCalendar, FiHash } from 'react-icons/fi';
 
 const InvoiceDetailsStep = () => {
   const { invoiceData, updateInvoiceData } = useInvoice();
+  const { user } = useAuth();
   
   const {
     register,
@@ -22,6 +24,18 @@ const InvoiceDetailsStep = () => {
       template: invoiceData.template
     }
   });
+
+  // Auto-fill logo from profile if available
+  useEffect(() => {
+    if (user?.profile?.logo && !invoiceData.details.invoiceLogo) {
+      updateInvoiceData({
+        details: {
+          ...invoiceData.details,
+          invoiceLogo: user.profile.logo
+        }
+      });
+    }
+  }, [user?.profile?.logo, invoiceData.details.invoiceLogo, updateInvoiceData]);
 
   const onSubmit = (data) => {
     updateInvoiceData({
@@ -66,7 +80,7 @@ const InvoiceDetailsStep = () => {
               <div>
                 <label className="form-label">Currency *</label>
                 <div className="relative">
-                  <FiDollarSign className="absolute left-3 top-3 h-4 w-4 text-light-text-secondary" />
+                  <span className="absolute left-3 top-3 h-4 w-4 text-light-text-secondary text-sm font-bold">₹</span>
                   <select
                     {...register('details.currency', { required: 'Currency is required' })}
                     className="form-input w-full pl-10"

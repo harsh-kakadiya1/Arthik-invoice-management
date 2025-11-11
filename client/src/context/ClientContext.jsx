@@ -32,7 +32,7 @@ export const ClientProvider = ({ children }) => {
 
   // Search clients by name
   const searchClients = async (query) => {
-    if (!query || query.trim().length < 2) {
+    if (!query || query.trim().length < 1) {
       return [];
     }
     

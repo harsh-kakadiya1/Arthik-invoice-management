@@ -50,14 +50,13 @@ const InvoiceSchema = new mongoose.Schema({
     },
     currency: {
       type: String,
-      default: 'USD'
+      default: 'INR'
     },
     items: [{
       name: {
         type: String,
         required: [true, 'Please add item name']
       },
-      description: String,
       quantity: {
         type: Number,
         required: [true, 'Please add quantity'],
@@ -92,15 +91,19 @@ const InvoiceSchema = new mongoose.Schema({
         default: false
       }
     },
-    taxDetails: {
-      amount: {
+    gstDetails: {
+      rate: {
         type: Number,
         default: 0
       },
-      amountType: {
+      rateType: {
         type: String,
-        enum: ['amount', 'percentage'],
+        enum: ['percentage'],
         default: 'percentage'
+      },
+      inclusive: {
+        type: Boolean,
+        default: false
       },
       enabled: {
         type: Boolean,

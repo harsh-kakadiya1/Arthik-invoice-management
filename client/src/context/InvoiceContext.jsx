@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { DEFAULT_INVOICE_DATA } from '../lib/variables';
 import { generateInvoiceNumber, numberToWords } from '../lib/helpers';
+import { useAuth } from './AuthContext';
 
 const InvoiceContext = createContext();
 
@@ -13,6 +14,7 @@ export const useInvoice = () => {
 };
 
 export const InvoiceProvider = ({ children, initialData, isEditMode = false, invoiceId = null }) => {
+  const { user } = useAuth();
   const isInitialMount = useRef(true);
   const updateTimeoutRef = useRef(null);
 
@@ -30,10 +32,14 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false, inv
       console.log('Merged invoice data:', mergedData);
       return mergedData;
     }
-    // For create mode, use default data
+    // For create mode, use default data with profile logo if available
     return {
       ...DEFAULT_INVOICE_DATA,
-      invoiceNumber: generateInvoiceNumber()
+      invoiceNumber: generateInvoiceNumber(),
+      details: {
+        ...DEFAULT_INVOICE_DATA.details,
+        invoiceLogo: user?.profile?.logo || ''
+      }
     };
   });
   const [currentStep, setCurrentStep] = useState(0);
@@ -67,14 +73,10 @@ export const InvoiceProvider = ({ children, initialData, isEditMode = false, inv
           }
         }
         
-        // Apply tax
-        const tax = newData.details.taxDetails;
-        if (tax.amount > 0) {
-          if (tax.amountType === 'percentage') {
-            totalAmount += (totalAmount * tax.amount) / 100;
-          } else {
-            totalAmount += tax.amount;
-          }
+        // Apply GST (only for exclusive)
+        const gst = newData.details.gstDetails;
+        if (gst && gst.rate > 0 && !gst.inclusive) {
+          totalAmount += (totalAmount * gst.rate) / 100;
         }
         
         // Apply shipping

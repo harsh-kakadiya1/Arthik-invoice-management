@@ -5,10 +5,13 @@ import { AuthProvider } from './context/AuthContext'
 import { InvoiceProvider } from './context/InvoiceContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { ClientProvider } from './context/ClientContext'
+import { NavigationProvider } from './context/NavigationContext'
 import AppWithSplash from './components/AppWithSplash'
+import NavigationWrapper from './components/NavigationWrapper'
 import ProtectedRoute from './components/Layout/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import LandingPage from './pages/LandingPage'
 import DashboardPage from './pages/DashboardPage'
 import CreateInvoicePage from './pages/CreateInvoicePage'
 import InvoiceViewPage from './pages/InvoiceViewPage'
@@ -19,6 +22,10 @@ import './index.css'
 
 const router = createBrowserRouter([
   {
+    path: '/',
+    element: <LandingPage />
+  },
+  {
     path: '/login',
     element: <LoginPage />
   },
@@ -27,7 +34,7 @@ const router = createBrowserRouter([
     element: <RegisterPage />
   },
   {
-    path: '/',
+    path: '/dashboard',
     element: (
       <ProtectedRoute>
         <DashboardPage />
@@ -58,7 +65,9 @@ const router = createBrowserRouter([
     path: '/edit-invoice/:id',
     element: (
       <ProtectedRoute>
-        <InvoiceEditPage />
+        <ClientProvider>
+          <InvoiceEditPage />
+        </ClientProvider>
       </ProtectedRoute>
     )
   },
@@ -83,15 +92,15 @@ const router = createBrowserRouter([
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <ThemeProvider>
-      <AuthProvider>
-        <ClientProvider>
+  <ThemeProvider>
+    <AuthProvider>
+      <NavigationProvider>
+        <NavigationWrapper>
           <AppWithSplash>
             <RouterProvider router={router} />
           </AppWithSplash>
-        </ClientProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </React.StrictMode>,
+        </NavigationWrapper>
+      </NavigationProvider>
+    </AuthProvider>
+  </ThemeProvider>,
 )
