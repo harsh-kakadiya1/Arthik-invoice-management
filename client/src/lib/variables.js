@@ -54,7 +54,8 @@ export const DEFAULT_INVOICE_DATA = {
     phone: '',
     address: '',
     city: '',
-    pinCode: ''
+    zipCode: '',
+    country: ''
   },
   receiver: {
     name: '',
@@ -62,7 +63,8 @@ export const DEFAULT_INVOICE_DATA = {
     phone: '',
     address: '',
     city: '',
-    pinCode: ''
+    zipCode: '',
+    country: ''
   },
   details: {
     invoiceDate: new Date(),

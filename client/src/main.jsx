@@ -60,11 +60,9 @@ const router = createBrowserRouter([
     path: '/edit-invoice/:id',
     element: (
       <ProtectedRoute>
-        <InvoiceProvider>
-          <ClientProvider>
-            <InvoiceEditPage />
-          </ClientProvider>
-        </InvoiceProvider>
+        <ClientProvider>
+          <InvoiceEditPage />
+        </ClientProvider>
       </ProtectedRoute>
     )
   },
